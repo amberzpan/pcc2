@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pcc2.social.mapper.UserMapper">
+    <select id="findByUsername" resultType="com.pcc2.social.entity.User">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+    
+    <select id="findById" resultType="com.pcc2.social.entity.User">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, nickname, avatar)
+        VALUES (#{username}, #{password}, #{nickname}, #{avatar})
+    </insert>
+    
+    <update id="update">
+        UPDATE user
+        SET nickname = #{nickname}, avatar = #{avatar}, bio = #{bio}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="incrementFollowersCount">
+        UPDATE user SET followers_count = followers_count + 1 WHERE id = #{id}
+    </update>
+    
+    <update id="decrementFollowersCount">
+        UPDATE user SET followers_count = GREATEST(followers_count - 1, 0) WHERE id = #{id}
+    </update>
+    
+    <update id="incrementFollowingCount">
+        UPDATE user SET following_count = following_count + 1 WHERE id = #{id}
+    </update>
+    
+    <update id="decrementFollowingCount">
+        UPDATE user SET following_count = GREATEST(following_count - 1, 0) WHERE id = #{id}
+    </update>
+</mapper>

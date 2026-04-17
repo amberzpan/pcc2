@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pcc2.social.mapper.LikeRecordMapper">
+    <select id="findByPostIdAndUserId" resultType="com.pcc2.social.entity.LikeRecord">
+        SELECT * FROM like_record 
+        WHERE post_id = #{postId} AND user_id = #{userId}
+    </select>
+    
+    <insert id="insert">
+        INSERT INTO like_record (post_id, user_id)
+        VALUES (#{postId}, #{userId})
+    </insert>
+    
+    <delete id="delete">
+        DELETE FROM like_record WHERE post_id = #{postId} AND user_id = #{userId}
+    </delete>
+    
+    <select id="countByPostId" resultType="int">
+        SELECT COUNT(*) FROM like_record WHERE post_id = #{postId}
+    </select>
+</mapper>
