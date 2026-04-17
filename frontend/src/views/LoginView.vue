@@ -1,27 +1,24 @@
 <template>
-  <div class="auth-container">
-    <div class="auth-card">
-      <h2>登录</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <input v-model="form.username" type="text" placeholder="用户名" required />
-        </div>
-        <div class="form-group">
-          <input v-model="form.password" type="password" placeholder="密码" required />
-        </div>
-        <button type="submit" class="btn-primary" :disabled="loading">
-          {{ loading ? '登录中...' : '登录' }}
-        </button>
-      </form>
-      <p class="auth-link">
-        还没有账号？<router-link to="/register">立即注册</router-link>
-      </p>
-    </div>
-  </div>
+  <section class="auth-page">
+    <article class="card">
+      <h2>欢迎回来</h2>
+      <p class="tip">登录后即可发布、评论、收藏</p>
+
+      <label>用户名</label>
+      <input v-model="form.username" placeholder="请输入用户名" />
+
+      <label>密码</label>
+      <input v-model="form.password" type="password" placeholder="请输入密码" />
+
+      <button class="btn" :disabled="loading" @click="submit">{{ loading ? '登录中...' : '登录' }}</button>
+
+      <p class="tip">还没有账号？<router-link to="/register">去注册</router-link></p>
+    </article>
+  </section>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '@/api'
 
@@ -29,30 +26,33 @@ const router = useRouter()
 const setToken = inject('setToken')
 const showToast = inject('showToast')
 
+const loading = ref(false)
 const form = ref({
   username: '',
   password: ''
 })
-const loading = ref(false)
 
-const handleLogin = async () => {
-  if (!form.value.username || !form.value.password) {
-    showToast('请填写完整', 'error')
+const submit = async () => {
+  if (!form.value.username.trim() || !form.value.password) {
+    showToast('请输入用户名和密码', 'error')
     return
   }
-  
+
   loading.value = true
   try {
-    const res = await login(form.value)
+    const res = await login({
+      username: form.value.username.trim(),
+      password: form.value.password
+    })
     if (res.code === 200) {
-      setToken(res.data.token)
+      await setToken(res.data.token)
       showToast('登录成功')
       router.push('/')
     } else {
       showToast(res.message || '登录失败', 'error')
     }
-  } catch (e) {
-    showToast(e.response?.data?.message || '登录失败', 'error')
+  } catch {
+    showToast('登录失败', 'error')
   } finally {
     loading.value = false
   }
@@ -60,75 +60,58 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 60px);
-  padding: 20px;
+.auth-page {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  place-items: center;
 }
 
-.auth-card {
+.card {
+  width: min(420px, 100%);
+  border: 1px solid #e7dccf;
+  border-radius: 18px;
+  background: #fffdf8;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(66, 45, 17, 0.06);
+}
+
+h2 {
+  margin: 0;
+}
+
+.tip {
+  color: #7a6d5a;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+input {
   width: 100%;
-  max-width: 360px;
-  background: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e7dccf;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
 }
 
-.auth-card h2 {
-  text-align: center;
-  margin-bottom: 24px;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group input {
+.btn {
+  margin-top: 12px;
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #e6162d;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 12px;
-  background: #e6162d;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px;
+  background: #f25a29;
   color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.btn-primary:hover {
-  background: #d51225;
-}
-
-.btn-primary:disabled {
-  background: #ccc;
+.btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
-}
-
-.auth-link {
-  text-align: center;
-  margin-top: 16px;
-  font-size: 14px;
-  color: #666;
-}
-
-.auth-link a {
-  color: #e6162d;
-  text-decoration: none;
 }
 </style>

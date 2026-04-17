@@ -3,7 +3,9 @@ package com.pcc2.social.service;
 import com.pcc2.social.entity.Favorite;
 import com.pcc2.social.entity.Post;
 import com.pcc2.social.mapper.FavoriteMapper;
+import com.pcc2.social.mapper.FollowMapper;
 import com.pcc2.social.mapper.LikeRecordMapper;
+import com.pcc2.social.mapper.PostMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -11,13 +13,23 @@ import java.util.List;
 public class FavoriteService {
     private final FavoriteMapper favoriteMapper;
     private final LikeRecordMapper likeRecordMapper;
+    private final FollowMapper followMapper;
+    private final PostMapper postMapper;
 
-    public FavoriteService(FavoriteMapper favoriteMapper, LikeRecordMapper likeRecordMapper) {
+    public FavoriteService(FavoriteMapper favoriteMapper,
+                           LikeRecordMapper likeRecordMapper,
+                           FollowMapper followMapper,
+                           PostMapper postMapper) {
         this.favoriteMapper = favoriteMapper;
         this.likeRecordMapper = likeRecordMapper;
+        this.followMapper = followMapper;
+        this.postMapper = postMapper;
     }
 
     public boolean toggleFavorite(Long userId, Long postId) {
+        if (postMapper.findById(postId) == null) {
+            throw new RuntimeException("内容不存在");
+        }
         Favorite existing = favoriteMapper.findByUserAndPost(userId, postId);
         if (existing != null) {
             favoriteMapper.delete(userId, postId);
@@ -41,6 +53,10 @@ public class FavoriteService {
         if (currentUserId != null) {
             for (Post post : posts) {
                 post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), currentUserId) != null);
+                post.setFavorited(true);
+                if (!post.getUserId().equals(currentUserId)) {
+                    post.setFollowed(followMapper.findByFollowerAndFollowing(currentUserId, post.getUserId()) != null);
+                }
             }
         }
         return posts;

@@ -5,30 +5,34 @@ import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.dto.UserVO;
 import com.pcc2.social.entity.User;
 import com.pcc2.social.mapper.UserMapper;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class UserService {
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final SecretKey key = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
-    private final String jwtSecret = "pcc2-social-platform-secret-key-2024";
-    private final long jwtExpiration = 604800000L;
+
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
     
     public UserService(UserMapper userMapper) {
         this.userMapper = userMapper;
     }
     
     public LoginResponse register(RegisterRequest request) {
+        validateRegisterRequest(request);
         User existUser = userMapper.findByUsername(request.getUsername());
         if (existUser != null) {
             throw new RuntimeException("用户名已存在");
@@ -49,6 +53,9 @@ public class UserService {
     }
     
     public LoginResponse login(String username, String password) {
+        if (isBlank(username) || isBlank(password)) {
+            throw new RuntimeException("用户名和密码不能为空");
+        }
         User user = userMapper.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
@@ -72,6 +79,35 @@ public class UserService {
         User user = userMapper.findById(userId);
         return toUserVO(user);
     }
+
+    public UserVO updateCurrentUser(Long userId, UserVO updateRequest) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        if (!isBlank(updateRequest.getNickname())) {
+            user.setNickname(updateRequest.getNickname().trim());
+        }
+        if (updateRequest.getAvatar() != null) {
+            user.setAvatar(updateRequest.getAvatar().trim());
+        }
+        if (updateRequest.getBio() != null) {
+            user.setBio(updateRequest.getBio().trim());
+        }
+        userMapper.update(user);
+        return toUserVO(userMapper.findById(userId));
+    }
+
+    public List<User> searchUsers(String keyword, int page, int size) {
+        if (isBlank(keyword)) {
+            return java.util.Collections.emptyList();
+        }
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        return userMapper.searchByKeyword(keyword.trim(), offset, safeSize);
+    }
     
     private UserVO toUserVO(User user) {
         if (user == null) return null;
@@ -80,6 +116,7 @@ public class UserService {
         vo.setUsername(user.getUsername());
         vo.setNickname(user.getNickname());
         vo.setAvatar(user.getAvatar());
+        vo.setBio(user.getBio());
         return vo;
     }
     
@@ -95,6 +132,22 @@ public class UserService {
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
                 .compact();
+    }
+
+    private void validateRegisterRequest(RegisterRequest request) {
+        if (request == null || isBlank(request.getUsername()) || isBlank(request.getPassword())) {
+            throw new RuntimeException("用户名和密码不能为空");
+        }
+        if (request.getUsername().trim().length() < 3 || request.getUsername().trim().length() > 20) {
+            throw new RuntimeException("用户名长度需在3到20个字符之间");
+        }
+        if (request.getPassword().length() < 6 || request.getPassword().length() > 64) {
+            throw new RuntimeException("密码长度需在6到64个字符之间");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
     
     public Long getUserIdFromToken(String token) {

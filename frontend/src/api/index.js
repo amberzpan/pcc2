@@ -33,10 +33,14 @@ request.interceptors.response.use(
 export const login = (data) => request.post('/user/login', data)
 export const register = (data) => request.post('/user/register', data)
 export const getUserInfo = () => request.get('/user/info')
+export const updateUserInfo = (data) => request.put('/user/info', data)
+export const searchUsers = (keyword, page = 1, size = 10) => request.get('/user/search', { params: { keyword, page, size } })
 
 export const getPostList = (page, size) => request.get('/post/list', { params: { page, size, _t: Date.now() } })
 export const getUserPosts = (userId, page, size) => request.get(`/post/user/${userId}`, { params: { page, size } })
 export const getPost = (id) => request.get(`/post/${id}`)
+export const searchPosts = (keyword, page = 1, size = 10) => request.get('/post/search', { params: { keyword, page, size } })
+export const getFollowingPosts = (page = 1, size = 10) => request.get('/post/following', { params: { page, size } })
 export const createPost = (data) => request.post('/post', data)
 export const deletePost = (id) => request.delete(`/post/${id}`)
 export const uploadImage = (file) => {

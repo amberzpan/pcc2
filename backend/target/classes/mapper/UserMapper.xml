@@ -8,6 +8,15 @@
     <select id="findById" resultType="com.pcc2.social.entity.User">
         SELECT * FROM user WHERE id = #{id}
     </select>
+
+    <select id="searchByKeyword" resultType="com.pcc2.social.entity.User">
+        SELECT *
+        FROM user
+        WHERE username LIKE CONCAT('%', #{keyword}, '%')
+           OR nickname LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
     
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user (username, password, nickname, avatar)

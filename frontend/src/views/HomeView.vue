@@ -1,150 +1,141 @@
 <template>
-  <div class="home-container">
-    <div class="post-list">
-      <div v-if="loading" class="loading">加载中...</div>
-      <div v-else-if="posts.length === 0" class="empty">暂无内容，快去发布第一条动态吧！</div>
-      <div v-else>
-        <div v-for="post in posts" :key="post.id" class="post-card">
-          <div class="post-header">
-            <div class="user-info">
-              <img :src="post.avatar || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><rect fill=%22%23ddd%22 width=%2240%22 height=%2240%22/><text fill=%22%23999%22 x=%2210%22 y=%2225%22 font-size=%2212%22>头像</text></svg>'" alt="avatar" class="avatar" />
-              <div class="user-details">
-                <span class="username">{{ post.nickname || post.username }}</span>
-                <span class="time">{{ formatTime(post.createdAt) }}</span>
-              </div>
+  <section class="feed-page">
+    <div class="panel switcher" v-if="isLoggedIn">
+      <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">全部动态</button>
+      <button :class="['switch-btn', mode === 'following' ? 'active' : '']" @click="changeMode('following')">关注动态</button>
+    </div>
+
+    <article v-for="post in posts" :key="post.id" class="panel post-card">
+      <header class="post-head">
+        <div>
+          <h3>{{ post.nickname || post.username || '匿名用户' }}</h3>
+          <p>{{ formatTime(post.createdAt) }}</p>
+        </div>
+        <button v-if="post.userId === currentUserId" class="danger-link" @click="removePost(post.id)">删除</button>
+      </header>
+
+      <p v-if="post.content" class="post-content">{{ post.content }}</p>
+      <img v-if="post.mediaUrl && post.mediaType === 'image'" class="media" :src="post.mediaUrl" alt="post media" />
+      <video v-if="post.mediaUrl && post.mediaType === 'video'" class="media" controls :src="post.mediaUrl"></video>
+
+      <div v-if="post.originalContent" class="quote">转发原文：{{ post.originalContent }}</div>
+
+      <footer class="post-actions">
+        <button class="action" :class="post.liked ? 'active' : ''" @click="togglePostLike(post)">赞 {{ post.likeCount || 0 }}</button>
+        <button class="action" @click="toggleComments(post)">评论 {{ post.commentCount || 0 }}</button>
+        <button class="action" :class="post.favorited ? 'active' : ''" @click="togglePostFavorite(post)">收藏</button>
+        <button class="action" v-if="post.userId !== currentUserId" @click="togglePostFollow(post)">{{ post.followed ? '取消关注' : '关注' }}</button>
+        <button class="action" @click="repost(post)">转发</button>
+      </footer>
+
+      <div class="comments" v-if="post.showComments">
+        <div class="comment-toolbar">
+          <select v-model="post.commentSort" @change="loadComments(post)">
+            <option value="time_desc">最新评论</option>
+            <option value="time_asc">最早评论</option>
+            <option value="hot">热门评论</option>
+          </select>
+        </div>
+        <div v-if="post.commentsLoading" class="hint">评论加载中...</div>
+        <template v-else>
+          <div v-if="post.comments.length === 0" class="hint">暂无评论</div>
+          <div class="comment-item" v-for="comment in post.comments" :key="comment.id">
+            <div class="comment-meta">
+              <strong>{{ comment.nickname || comment.username }}</strong>
+              <span>{{ formatTime(comment.createdAt) }}</span>
+              <button v-if="comment.userId === currentUserId" class="danger-link" @click="removeComment(post, comment.id)">删除</button>
             </div>
+            <p>{{ comment.content }}</p>
           </div>
-          <div class="post-content">
-            <p v-if="post.content">{{ post.content }}</p>
-            <img v-if="post.mediaUrl && post.mediaType === 'image'" :src="post.mediaUrl" alt="post image" class="post-image" @click="viewImage(post.mediaUrl)" />
-            <video v-if="post.mediaUrl && post.mediaType === 'video'" :src="post.mediaUrl" controls class="post-video"></video>
-            <div v-if="post.originalContent" class="repost-original">
-              <span class="repost-label">转发原文:</span>
-              <p>{{ post.originalContent }}</p>
-            </div>
-          </div>
-          <div class="post-actions">
-            <span class="action-btn" :class="{ active: post.liked }" @click="handleLike(post)">
-              <span class="icon">{{ post.liked ? '♥' : '♡' }}</span>
-              {{ post.likeCount || 0 }}
-            </span>
-            <span class="action-btn" @click="showComments(post)">
-              <span class="icon">💬</span>
-              {{ post.commentCount || 0 }}
-            </span>
-            <span class="action-btn" @click="showRepost(post)">
-              <span class="icon">🔄</span>
-              {{ post.repostCount || 0 }}
-            </span>
-            <span class="action-btn" :class="{ active: post.favorited }" @click="handleFavorite(post)">
-              <span class="icon">{{ post.favorited ? '★' : '☆' }}</span>
-              收藏
-            </span>
-            <span v-if="post.userId !== currentUserId" class="action-btn" @click="handleFollow(post)">
-              <span class="icon">{{ post.followed ? '已关注' : '+关注' }}</span>
-            </span>
-            <span v-if="post.userId === currentUserId" class="action-btn delete" @click="handleDelete(post.id)">
-              <span class="icon">🗑</span>
-            </span>
-          </div>
-          
-          <div v-if="post.showComments" class="comments-section">
-            <div class="comments-sort">
-              <select v-model="post.commentSort" @change="loadComments(post)">
-                <option value="time_desc">最新评论</option>
-                <option value="time_asc">最早评论</option>
-                <option value="hot">热门评论</option>
-              </select>
-            </div>
-            <div v-if="post.commentsLoading" class="loading">加载评论...</div>
-            <div v-else-if="post.comments && post.comments.length > 0">
-              <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
-                <div class="comment-header">
-                  <span class="comment-user">{{ comment.nickname || comment.username }}</span>
-                  <span class="comment-time">{{ formatTime(comment.createdAt) }}</span>
-                  <span v-if="comment.userId === currentUserId" class="comment-delete" @click="deleteComment(post, comment.id)">删除</span>
-                </div>
-                <p class="comment-content">{{ comment.content }}</p>
-              </div>
-            </div>
-            <div v-else class="no-comments">暂无评论</div>
-            <div class="comment-input" v-if="isLoggedIn">
-              <input v-model="post.newComment" placeholder="写评论..." @keyup.enter="submitComment(post)" />
-              <button @click="submitComment(post)">发表</button>
-            </div>
-            <div v-else class="comment-login-tip">登录后可以评论</div>
-          </div>
+        </template>
+
+        <div class="comment-editor" v-if="isLoggedIn">
+          <input v-model="post.newComment" placeholder="写评论..." @keyup.enter="submitComment(post)" />
+          <button @click="submitComment(post)">发布</button>
         </div>
       </div>
-      <div v-if="hasMore" class="load-more" @click="loadMore">加载更多</div>
-    </div>
-  </div>
+    </article>
+
+    <div class="panel empty" v-if="!loading && posts.length === 0">当前没有内容</div>
+
+    <div class="panel load-more" v-if="hasMore" @click="loadMore">加载更多</div>
+    <div class="panel hint" v-if="loading">加载中...</div>
+  </section>
 </template>
 
 <script setup>
-import { ref, inject, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { getPostList, deletePost, toggleLike, getComments, createComment, deleteComment as apiDeleteComment, toggleFavorite, toggleFollow, createPost } from '@/api'
+import { computed, inject, onMounted, ref } from 'vue'
+import {
+  createComment,
+  createPost,
+  deleteComment as apiDeleteComment,
+  deletePost,
+  getComments,
+  getFollowingPosts,
+  getPostList,
+  toggleFavorite,
+  toggleFollow,
+  toggleLike
+} from '@/api'
 
-const route = useRoute()
 const user = inject('user')
 const isLoggedIn = inject('isLoggedIn')
 const showToast = inject('showToast')
 
 const posts = ref([])
-const loading = ref(true)
 const page = ref(1)
 const size = 10
 const hasMore = ref(false)
+const loading = ref(false)
+const mode = ref('all')
 
 const currentUserId = computed(() => user.value?.id)
 
-const loadPosts = async (retryCount = 0) => {
+const normalizePosts = (items) => items.map((post) => ({
+  ...post,
+  showComments: false,
+  comments: [],
+  commentsLoading: false,
+  commentSort: 'time_desc',
+  newComment: ''
+}))
+
+const fetchPosts = async (reset = true) => {
+  if (reset) {
+    page.value = 1
+    posts.value = []
+  }
+
   loading.value = true
-  page.value = 1
   try {
-    const res = await getPostList(page.value, size)
-    if (res.code === 200 && res.data) {
-      posts.value = res.data.map(p => ({ ...p, showComments: false, comments: [], newComment: '' }))
-      hasMore.value = res.data.length === size
-    } else {
+    const api = mode.value === 'following' ? getFollowingPosts : getPostList
+    const res = await api(page.value, size)
+    if (res.code !== 200 || !Array.isArray(res.data)) {
       posts.value = []
       hasMore.value = false
+      return
     }
-  } catch (e) {
-    console.error('加载失败:', e)
-    if (retryCount < 2) {
-      setTimeout(() => loadPosts(retryCount + 1), 1000)
-    } else {
-      showToast('加载失败', 'error')
-    }
+    const next = normalizePosts(res.data)
+    posts.value = reset ? next : posts.value.concat(next)
+    hasMore.value = next.length === size
+  } catch {
+    showToast('加载失败', 'error')
   } finally {
     loading.value = false
   }
 }
 
-watch(() => route.path, () => {
-  if (route.path === '/') {
-    loadPosts()
-  }
-})
-
 const loadMore = async () => {
-  page.value++
-  try {
-    const res = await getPostList(page.value, size)
-    if (res.code === 200 && res.data) {
-      const newPosts = res.data.map(p => ({ ...p, showComments: false, comments: [], newComment: '' }))
-      posts.value.push(...newPosts)
-      hasMore.value = res.data.length === size
-    }
-  } catch (e) {
-    console.error('加载失败:', e)
-    showToast('加载失败', 'error')
-  }
+  page.value += 1
+  await fetchPosts(false)
 }
 
-const handleLike = async (post) => {
+const changeMode = async (target) => {
+  mode.value = target
+  await fetchPosts(true)
+}
+
+const togglePostLike = async (post) => {
   if (!isLoggedIn.value) {
     showToast('请先登录', 'error')
     return
@@ -152,93 +143,15 @@ const handleLike = async (post) => {
   try {
     const res = await toggleLike(post.id)
     if (res.code === 200) {
-      post.liked = res.data.liked
-      post.likeCount = (post.likeCount || 0) + (res.data.liked ? 1 : -1)
+      post.liked = !!res.data.liked
+      post.likeCount = Math.max(0, (post.likeCount || 0) + (post.liked ? 1 : -1))
     }
-  } catch (e) {
-    showToast('操作失败', 'error')
+  } catch {
+    showToast('点赞失败', 'error')
   }
 }
 
-const showComments = async (post) => {
-  post.showComments = !post.showComments
-  if (post.showComments && !post.commentsLoaded) {
-    post.commentsLoading = true
-    post.commentSort = post.commentSort || 'time_desc'
-    try {
-      const res = await getComments(post.id, post.commentSort)
-      if (res.code === 200) {
-        post.comments = res.data
-        post.commentsLoaded = true
-      }
-    } catch (e) {
-      showToast('加载评论失败', 'error')
-    } finally {
-      post.commentsLoading = false
-    }
-  }
-}
-
-const loadComments = async (post) => {
-  post.commentsLoading = true
-  try {
-    const res = await getComments(post.id, post.commentSort)
-    if (res.code === 200) {
-      post.comments = res.data
-    }
-  } catch (e) {
-    showToast('加载评论失败', 'error')
-  } finally {
-    post.commentsLoading = false
-  }
-}
-
-const submitComment = async (post) => {
-  if (!post.newComment?.trim()) {
-    showToast('请输入评论内容', 'error')
-    return
-  }
-  try {
-    const res = await createComment({ postId: post.id, content: post.newComment })
-    if (res.code === 200) {
-      if (!post.comments) post.comments = []
-      post.comments.push(res.data)
-      post.commentCount = (post.commentCount || 0) + 1
-      post.newComment = ''
-      showToast('评论成功')
-    }
-  } catch (e) {
-    showToast('评论失败', 'error')
-  }
-}
-
-const deleteComment = async (post, commentId) => {
-  try {
-    const res = await apiDeleteComment(commentId)
-    if (res.code === 200) {
-      post.comments = post.comments.filter(c => c.id !== commentId)
-      post.commentCount = (post.commentCount || 0) - 1
-      showToast('删除成功')
-    }
-  } catch (e) {
-    showToast('删除失败', 'error')
-  }
-}
-
-const handleDelete = async (postId) => {
-  if (!confirm('确定删除这条动态？')) return
-  try {
-    const res = await deletePost(postId)
-    if (res.code === 200) {
-      posts.value = posts.value.filter(p => p.id !== postId)
-      showToast('删除成功')
-    }
-  } catch (e) {
-    showToast('删除失败', 'error')
-  }
-}
-
-const handleFavorite = async (post) => {
+const togglePostFavorite = async (post) => {
   if (!isLoggedIn.value) {
     showToast('请先登录', 'error')
     return
@@ -246,14 +159,14 @@ const handleFavorite = async (post) => {
   try {
     const res = await toggleFavorite(post.id)
     if (res.code === 200) {
-      post.favorited = res.data.favorited
+      post.favorited = !!res.data.favorited
     }
-  } catch (e) {
-    showToast('操作失败', 'error')
+  } catch {
+    showToast('收藏失败', 'error')
   }
 }
 
-const handleFollow = async (post) => {
+const togglePostFollow = async (post) => {
   if (!isLoggedIn.value) {
     showToast('请先登录', 'error')
     return
@@ -261,278 +174,284 @@ const handleFollow = async (post) => {
   try {
     const res = await toggleFollow(post.userId)
     if (res.code === 200) {
-      post.followed = res.data.followed
+      post.followed = !!res.data.followed
     }
-  } catch (e) {
-    showToast('操作失败', 'error')
+  } catch {
+    showToast('关注操作失败', 'error')
   }
 }
 
-const showRepost = (post) => {
-  const content = prompt('请输入转发语（可选）：')
-  if (content === null) return
-  handleRepost(post, content || '')
-}
-
-const handleRepost = async (post, content) => {
+const repost = async (post) => {
   if (!isLoggedIn.value) {
     showToast('请先登录', 'error')
     return
   }
+  const content = window.prompt('请输入转发语（可选）')
+  if (content === null) return
   try {
-    const res = await createPost({ content: content, repostId: post.id })
+    const res = await createPost({ content, repostId: post.id })
     if (res.code === 200) {
       post.repostCount = (post.repostCount || 0) + 1
       showToast('转发成功')
+    } else {
+      showToast(res.message || '转发失败', 'error')
     }
-  } catch (e) {
+  } catch {
     showToast('转发失败', 'error')
   }
 }
 
-const viewImage = (url) => {
-  window.open(url, '_blank')
+const removePost = async (postId) => {
+  if (!window.confirm('确定删除这条动态吗？')) return
+  try {
+    const res = await deletePost(postId)
+    if (res.code === 200) {
+      posts.value = posts.value.filter((item) => item.id !== postId)
+      showToast('删除成功')
+    } else {
+      showToast(res.message || '删除失败', 'error')
+    }
+  } catch {
+    showToast('删除失败', 'error')
+  }
+}
+
+const toggleComments = async (post) => {
+  post.showComments = !post.showComments
+  if (post.showComments && post.comments.length === 0) {
+    await loadComments(post)
+  }
+}
+
+const loadComments = async (post) => {
+  post.commentsLoading = true
+  try {
+    const res = await getComments(post.id, post.commentSort)
+    if (res.code === 200 && Array.isArray(res.data)) {
+      post.comments = res.data
+    }
+  } catch {
+    showToast('评论加载失败', 'error')
+  } finally {
+    post.commentsLoading = false
+  }
+}
+
+const submitComment = async (post) => {
+  if (!post.newComment.trim()) {
+    showToast('评论不能为空', 'error')
+    return
+  }
+  try {
+    const res = await createComment({ postId: post.id, content: post.newComment.trim() })
+    if (res.code === 200) {
+      post.comments.push(res.data)
+      post.commentCount = (post.commentCount || 0) + 1
+      post.newComment = ''
+      showToast('评论成功')
+    } else {
+      showToast(res.message || '评论失败', 'error')
+    }
+  } catch {
+    showToast('评论失败', 'error')
+  }
+}
+
+const removeComment = async (post, commentId) => {
+  try {
+    const res = await apiDeleteComment(commentId)
+    if (res.code === 200) {
+      post.comments = post.comments.filter((item) => item.id !== commentId)
+      post.commentCount = Math.max(0, (post.commentCount || 0) - 1)
+      showToast('评论已删除')
+    } else {
+      showToast(res.message || '删除失败', 'error')
+    }
+  } catch {
+    showToast('删除失败', 'error')
+  }
 }
 
 const formatTime = (time) => {
   if (!time) return ''
   const date = new Date(time)
-  const now = new Date()
-  const diff = now - date
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  return `${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('zh-CN', { hour12: false })
 }
 
-onMounted(async () => {
-  await loadPosts()
+onMounted(() => {
+  fetchPosts(true)
 })
 </script>
 
 <style scoped>
-.home-container {
-  max-width: 100%;
+.feed-page {
+  display: grid;
+  gap: 14px;
 }
 
-.post-list {
-  max-width: 700px;
-  margin: 0 auto;
+.panel {
+  border: 1px solid #e7dccf;
+  border-radius: 16px;
+  background: #fffdf8;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(66, 45, 17, 0.06);
 }
 
-.post-card {
+.switcher {
+  display: flex;
+  gap: 10px;
+}
+
+.switch-btn {
+  border: 1px solid #e7dccf;
+  border-radius: 999px;
+  padding: 8px 14px;
   background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  transition: box-shadow 0.2s;
+  cursor: pointer;
+  font-weight: 700;
 }
 
-.post-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+.switch-btn.active {
+  background: #f25a29;
+  border-color: #f25a29;
+  color: #fff;
 }
 
-.post-header {
+.post-head {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  align-items: start;
+  gap: 12px;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
+.post-head h3 {
+  margin: 0;
+  font-size: 1rem;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #eee;
+.post-head p {
+  margin: 4px 0 0;
+  color: #7a6d5a;
+  font-size: 0.82rem;
 }
 
-.user-details {
-  margin-left: 10px;
-  display: flex;
-  flex-direction: column;
-}
-
-.username {
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.time {
-  font-size: 12px;
-  color: #999;
-}
-
-.post-content p {
-  font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 12px;
+.post-content {
+  margin: 12px 0;
   white-space: pre-wrap;
-  word-break: break-word;
 }
 
-.post-image {
-  max-width: 100%;
-  border-radius: 8px;
-  cursor: pointer;
+.media {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 6px;
+  max-height: 460px;
+  object-fit: cover;
 }
 
-.post-video {
-  max-width: 100%;
-  border-radius: 8px;
-  margin-top: 8px;
-  max-height: 400px;
-}
-
-.repost-original {
-  background: #f5f5f5;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 8px;
-}
-
-.repost-label {
-  font-size: 12px;
-  color: #999;
+.quote {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #7a6d5a;
+  border-left: 3px solid #f25a29;
+  padding-left: 10px;
 }
 
 .post-actions {
   display: flex;
-  gap: 20px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-  margin-top: 12px;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.action-btn:hover {
-  color: #e6162d;
-}
-
-.action-btn.active {
-  color: #e6162d;
-}
-
-.action-btn.delete {
-  margin-left: auto;
-  color: #999;
-}
-
-.comments-section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.comment-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.comment-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-  font-size: 12px;
-}
-
-.comment-user {
-  color: #333;
-  font-weight: 500;
-}
-
-.comment-time {
-  color: #999;
-  margin-left: 8px;
-}
-
-.comment-delete {
-  color: #e6162d;
-  margin-left: auto;
-  cursor: pointer;
-}
-
-.comment-content {
-  font-size: 14px;
-  color: #333;
-}
-
-.comment-input {
-  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
 }
 
-.comment-input input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  font-size: 14px;
+.action {
+  border: 1px solid #e7dccf;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.comment-input button {
-  padding: 8px 16px;
-  background: #e6162d;
+.action.active {
+  background: #f25a29;
+  border-color: #f25a29;
   color: #fff;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
+}
+
+.danger-link {
+  border: 0;
+  background: transparent;
+  color: #cc2a2a;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.comment-login-tip {
+.comments {
   margin-top: 12px;
-  color: #999;
-  font-size: 14px;
+  border-top: 1px dashed #e7dccf;
+  padding-top: 12px;
 }
 
-.loading, .empty, .load-more {
-  text-align: center;
-  padding: 20px;
-  color: #999;
+.comment-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment-toolbar select {
+  border: 1px solid #e7dccf;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.comment-item {
+  padding: 10px 0;
+  border-bottom: 1px dashed #f0e6db;
+}
+
+.comment-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.86rem;
+  color: #7a6d5a;
+}
+
+.comment-meta strong {
+  color: #2d2418;
+}
+
+.comment-editor {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-editor input {
+  border: 1px solid #e7dccf;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.comment-editor button {
+  border: 0;
+  border-radius: 10px;
+  background: #f25a29;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 12px;
 }
 
 .load-more {
-  cursor: pointer;
-  color: #e6162d;
-}
-
-.no-comments {
   text-align: center;
-  padding: 12px;
-  color: #999;
-  font-size: 14px;
-}
-
-.comments-sort {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.comments-sort select {
-  padding: 4px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #666;
   cursor: pointer;
+  font-weight: 700;
 }
 
-.comments-sort select:hover {
-  border-color: #e6162d;
+.hint,
+.empty {
+  text-align: center;
+  color: #7a6d5a;
 }
 </style>

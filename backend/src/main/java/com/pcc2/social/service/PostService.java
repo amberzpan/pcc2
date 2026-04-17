@@ -2,7 +2,6 @@ package com.pcc2.social.service;
 
 import com.pcc2.social.dto.PostRequest;
 import com.pcc2.social.entity.Post;
-import com.pcc2.social.entity.User;
 import com.pcc2.social.mapper.FavoriteMapper;
 import com.pcc2.social.mapper.FollowMapper;
 import com.pcc2.social.mapper.LikeRecordMapper;
@@ -29,8 +28,10 @@ public class PostService {
     }
     
     public List<Post> getPostList(int page, int size, Long currentUserId) {
-        int offset = (page - 1) * size;
-        List<Post> posts = postMapper.findAll(offset, size);
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findAll(offset, safeSize);
         if (currentUserId != null) {
             for (Post post : posts) {
                 post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), currentUserId) != null);
@@ -44,8 +45,45 @@ public class PostService {
     }
     
     public List<Post> getUserPosts(Long userId, int page, int size, Long currentUserId) {
-        int offset = (page - 1) * size;
-        List<Post> posts = postMapper.findByUserId(userId, offset, size);
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findByUserId(userId, offset, safeSize);
+        if (currentUserId != null) {
+            for (Post post : posts) {
+                post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), currentUserId) != null);
+                post.setFavorited(favoriteMapper.findByUserAndPost(currentUserId, post.getId()) != null);
+                if (!post.getUserId().equals(currentUserId)) {
+                    post.setFollowed(followMapper.findByFollowerAndFollowing(currentUserId, post.getUserId()) != null);
+                }
+            }
+        }
+        return posts;
+    }
+
+    public List<Post> getFollowingPosts(Long userId, int page, int size) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findByFollowing(userId, offset, safeSize);
+        for (Post post : posts) {
+            post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), userId) != null);
+            post.setFavorited(favoriteMapper.findByUserAndPost(userId, post.getId()) != null);
+            if (!post.getUserId().equals(userId)) {
+                post.setFollowed(followMapper.findByFollowerAndFollowing(userId, post.getUserId()) != null);
+            }
+        }
+        return posts;
+    }
+
+    public List<Post> searchPosts(String keyword, int page, int size, Long currentUserId) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.search(keyword.trim(), offset, safeSize);
         if (currentUserId != null) {
             for (Post post : posts) {
                 post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), currentUserId) != null);
@@ -72,10 +110,25 @@ public class PostService {
     
     @Transactional
     public Post createPost(Long userId, PostRequest request) {
+        if (request == null) {
+            throw new RuntimeException("请求不能为空");
+        }
+
+        boolean hasText = request.getContent() != null && !request.getContent().trim().isEmpty();
+        boolean hasMedia = request.getMediaUrl() != null && !request.getMediaUrl().trim().isEmpty();
+        boolean isRepost = request.getRepostId() != null;
+        if (!hasText && !hasMedia && !isRepost) {
+            throw new RuntimeException("内容不能为空");
+        }
+
         Post post = new Post();
         post.setUserId(userId);
-        post.setContent(request.getContent());
-        post.setMediaUrl(request.getMediaUrl());
+        post.setContent(request.getContent() == null ? "" : request.getContent().trim());
+        if (request.getMediaUrl() != null && !request.getMediaUrl().trim().isEmpty()) {
+            post.setMediaUrl(request.getMediaUrl());
+        } else {
+            post.setMediaUrl(request.getImageUrl());
+        }
         post.setMediaType(request.getMediaType());
         
         if (request.getRepostId() != null) {
@@ -96,14 +149,7 @@ public class PostService {
         
         postMapper.insert(post);
         
-        Post createdPost = postMapper.findById(post.getId());
-        User user = userMapper.findById(userId);
-        if (user != null) {
-            createdPost.setUsername(user.getUsername());
-            createdPost.setNickname(user.getNickname());
-            createdPost.setAvatar(user.getAvatar());
-        }
-        return createdPost;
+        return postMapper.findById(post.getId());
     }
     
     @Transactional

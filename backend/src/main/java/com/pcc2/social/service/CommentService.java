@@ -43,10 +43,13 @@ public class CommentService {
     
     @Transactional
     public Comment createComment(Long userId, CommentRequest request) {
+        if (postMapper.findById(request.getPostId()) == null) {
+            throw new RuntimeException("内容不存在");
+        }
         Comment comment = new Comment();
         comment.setPostId(request.getPostId());
         comment.setUserId(userId);
-        comment.setContent(request.getContent());
+        comment.setContent(request.getContent().trim());
         
         commentMapper.insert(comment);
         

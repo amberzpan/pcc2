@@ -23,6 +23,10 @@ public class FollowService {
             throw new RuntimeException("不能关注自己");
         }
 
+        if (userMapper.findById(followingId) == null) {
+            throw new RuntimeException("目标用户不存在");
+        }
+
         Follow existing = followMapper.findByFollowerAndFollowing(followerId, followingId);
         if (existing != null) {
             followMapper.delete(followerId, followingId);

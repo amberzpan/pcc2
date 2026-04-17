@@ -4,8 +4,8 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/social_platform?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: hp197027
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -19,8 +19,8 @@ mybatis:
     map-underscore-to-camel-case: true
 
 jwt:
-  secret: pcc2-social-platform-secret-key-2024
-  expiration: 604800000
+  secret: ${JWT_SECRET:pcc2-social-platform-secret-key-2024}
+  expiration: ${JWT_EXPIRATION:604800000}
 
 upload:
   path: ./uploads/images/

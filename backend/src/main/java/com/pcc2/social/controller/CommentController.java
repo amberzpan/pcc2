@@ -32,6 +32,9 @@ public class CommentController {
         if (userId == null) {
             return Result.error(401, "未登录");
         }
+        if (request == null || request.getPostId() == null || request.getContent() == null || request.getContent().trim().isEmpty()) {
+            return Result.error("评论内容不能为空");
+        }
         Comment comment = commentService.createComment(userId, request);
         return Result.success(comment);
     }

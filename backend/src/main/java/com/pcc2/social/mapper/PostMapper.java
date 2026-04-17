@@ -9,6 +9,8 @@ import java.util.List;
 public interface PostMapper {
     List<Post> findAll(@Param("offset") int offset, @Param("limit") int limit);
     List<Post> findByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+    List<Post> findByFollowing(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+    List<Post> search(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
     Post findById(Long id);
     int insert(Post post);
     int delete(Long id);

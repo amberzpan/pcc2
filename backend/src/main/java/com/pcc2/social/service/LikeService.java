@@ -18,6 +18,9 @@ public class LikeService {
     
     @Transactional
     public boolean toggleLike(Long postId, Long userId) {
+        if (postMapper.findById(postId) == null) {
+            throw new RuntimeException("内容不存在");
+        }
         LikeRecord existing = likeRecordMapper.findByPostIdAndUserId(postId, userId);
         
         if (existing != null) {

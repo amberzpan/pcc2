@@ -1,119 +1,98 @@
 <template>
-  <div id="app">
-    <nav class="navbar">
-      <div class="nav-container">
-        <router-link to="/" class="nav-logo">
-          <span class="logo-icon">微博</span>
-        </router-link>
-        <div class="nav-search">
-          <input type="text" placeholder="搜索" />
-        </div>
-        <div class="nav-links">
-          <router-link to="/" class="nav-item">
-            <span class="icon">🏠</span>
-            <span>首页</span>
-          </router-link>
-          <template v-if="isLoggedIn">
-            <router-link to="/publish" class="nav-item">
-              <span class="icon">✏️</span>
-              <span>发布</span>
-            </router-link>
-            <router-link to="/profile" class="nav-item">
-              <span class="icon">👤</span>
-              <span>我的</span>
-            </router-link>
-            <a @click="logout" class="nav-item logout-btn">退出</a>
-          </template>
-          <template v-else>
-            <router-link to="/login" class="nav-item">登录</router-link>
-            <router-link to="/register" class="nav-item register-btn">注册</router-link>
-          </template>
-        </div>
-      </div>
-    </nav>
-    <div class="layout-container">
-      <aside class="sidebar">
-        <div class="sidebar-menu">
-          <router-link to="/" class="menu-item">
-            <span class="menu-icon">🏠</span>
-            <span>首页</span>
-          </router-link>
-          <a href="#" class="menu-item">
-            <span class="menu-icon">🌍</span>
-            <span>发现</span>
-          </a>
-          <a href="#" class="menu-item">
-            <span class="menu-icon">🔥</span>
-            <span>热门</span>
-          </a>
-          <template v-if="isLoggedIn">
-            <router-link to="/favorites" class="menu-item">
-              <span class="menu-icon">⭐</span>
-              <span>收藏</span>
-            </router-link>
-          </template>
-        </div>
-        <div class="sidebar-user" v-if="user">
-          <img :src="user.avatar || defaultAvatar" alt="avatar" class="user-avatar" />
-          <div class="user-info">
-            <span class="user-name">{{ user.nickname || user.username }}</span>
-            <span class="user-desc">{{ user.bio || '这个人很懒，什么都没写' }}</span>
-          </div>
-        </div>
-      </aside>
-      <main class="main-content">
-        <router-view :key="$route.fullPath" />
-      </main>
-    </div>
-    <div v-if="toast.show" class="toast" :class="toast.type">{{ toast.message }}</div>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand" @click="goHome">SimpleSocial</div>
+      <form class="search-wrap" @submit.prevent="submitSearch">
+        <input v-model="keyword" placeholder="搜索内容/用户" />
+        <button type="submit">搜索</button>
+      </form>
+      <nav class="top-actions">
+        <router-link to="/" class="btn ghost">首页</router-link>
+        <router-link to="/publish" class="btn ghost" v-if="isLoggedIn">发布</router-link>
+        <router-link to="/favorites" class="btn ghost" v-if="isLoggedIn">收藏</router-link>
+        <router-link to="/profile" class="btn ghost" v-if="isLoggedIn">我的</router-link>
+        <router-link to="/login" class="btn ghost" v-if="!isLoggedIn">登录</router-link>
+        <router-link to="/register" class="btn solid" v-if="!isLoggedIn">注册</router-link>
+        <button class="btn solid" v-if="isLoggedIn" @click="logout">退出</button>
+      </nav>
+    </header>
+
+    <main class="page">
+      <router-view :key="$route.fullPath" />
+    </main>
+
+    <transition name="toast-fade">
+      <div v-if="toast.show" class="toast" :class="toast.type">{{ toast.message }}</div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, provide, computed, onMounted } from 'vue'
+import { computed, onMounted, provide, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUserInfo } from './api'
 
 const router = useRouter()
 const token = ref(localStorage.getItem('token') || '')
 const user = ref(null)
+const keyword = ref('')
+const toast = ref({ show: false, message: '', type: 'success' })
 
-const defaultAvatar = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><rect fill=%22%23ffaabb%22 width=%2240%22 height=%2240%22/><text fill=%22white%22 x=%2210%22 y=%2225%22 font-size=%2216%22>头像</text></svg>'
-
-const toast = ref({ show: false, message: '', type: '' })
+const isLoggedIn = computed(() => !!token.value)
 
 const showToast = (message, type = 'success') => {
   toast.value = { show: true, message, type }
   setTimeout(() => {
     toast.value.show = false
-  }, 3000)
+  }, 2400)
 }
 
-const isLoggedIn = computed(() => !!token.value)
-
 const loadUser = async () => {
-  if (token.value) {
-    try {
-      const res = await getUserInfo()
-      if (res.code === 200) {
-        user.value = res.data
-      }
-    } catch (e) {
-      console.error(e)
-    }
+  if (!token.value) {
+    user.value = null
+    return
   }
+  try {
+    const res = await getUserInfo()
+    if (res.code === 200) {
+      user.value = res.data
+    } else {
+      localStorage.removeItem('token')
+      token.value = ''
+      user.value = null
+    }
+  } catch {
+    localStorage.removeItem('token')
+    token.value = ''
+    user.value = null
+  }
+}
+
+const setToken = async (newToken) => {
+  token.value = newToken
+  localStorage.setItem('token', newToken)
+  await loadUser()
 }
 
 const logout = () => {
   localStorage.removeItem('token')
   token.value = ''
   user.value = null
+  showToast('已退出登录')
   router.push('/login')
 }
 
-const setToken = (newToken) => {
-  localStorage.setItem('token', newToken)
-  token.value = newToken
+const submitSearch = () => {
+  const value = keyword.value.trim()
+  if (!value) {
+    showToast('请输入搜索关键词', 'error')
+    return
+  }
+  router.push({ path: '/search', query: { q: value } })
+}
+
+const goHome = () => {
+  router.push('/')
 }
 
 provide('token', token)
@@ -121,285 +100,159 @@ provide('user', user)
 provide('isLoggedIn', isLoggedIn)
 provide('showToast', showToast)
 provide('setToken', setToken)
+provide('reloadUser', loadUser)
 
-onMounted(() => {
-  loadUser()
-})
+onMounted(loadUser)
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #f3efe7;
+  --paper: #fffdf8;
+  --ink: #2d2418;
+  --muted: #7a6d5a;
+  --accent: #f25a29;
+  --accent-strong: #d8481a;
+  --line: #e7dccf;
+}
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
-:root {
-  --primary-color: #ff8200;
-  --primary-hover: #f75a00;
-  --text-primary: #333;
-  --text-secondary: #888;
-  --bg-main: #f5f5f5;
-  --bg-card: #fff;
-  --border-color: #eee;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
 body {
-  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  line-height: 1.5;
+  margin: 0;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 10%, #ffe4c5 0, transparent 36%),
+    radial-gradient(circle at 90% 20%, #ffd1bd 0, transparent 38%),
+    var(--bg);
 }
 
-#app {
+.shell {
   min-height: 100vh;
 }
 
-.navbar {
-  position: fixed;
+.topbar {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  height: 54px;
-  background: linear-gradient(90deg, #ff8200 0%, #ff6a00 100%);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  z-index: 1000;
-}
-
-.nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100%;
-  display: flex;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 180px 1fr auto;
+  gap: 16px;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  background: rgba(255, 251, 244, 0.85);
 }
 
-.nav-logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
+.brand {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
 }
 
-.logo-icon {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 1px;
+.search-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
 }
 
-.nav-search {
-  flex: 0 0 300px;
-  margin: 0 20px;
-}
-
-.nav-search input {
-  width: 100%;
-  height: 32px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  font-size: 14px;
+.search-wrap input {
+  border: 0;
+  padding: 10px 14px;
+  background: transparent;
+  font-size: 0.95rem;
   outline: none;
 }
 
-.nav-search input::placeholder {
-  color: rgba(255,255,255,0.7);
+.search-wrap button {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 0 18px;
+  cursor: pointer;
 }
 
-.nav-search input:focus {
-  background: rgba(255,255,255,0.3);
-}
-
-.nav-links {
+.top-actions {
   display: flex;
-  align-items: center;
   gap: 8px;
-}
-
-.nav-item {
-  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  color: rgba(255,255,255,0.9);
+}
+
+.btn {
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border-radius: 999px;
   text-decoration: none;
-  font-size: 14px;
-  border-radius: 4px;
-  transition: background 0.2s;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.nav-item:hover {
-  background: rgba(255,255,255,0.2);
+.btn.solid {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
-.nav-item .icon {
-  font-size: 16px;
+.btn:hover {
+  transform: translateY(-1px);
 }
 
-.register-btn {
-  background: #fff;
-  color: var(--primary-color) !important;
-  font-weight: 500;
-}
-
-.register-btn:hover {
-  background: #fff !important;
-  color: var(--primary-hover) !important;
-}
-
-.logout-btn {
-  color: rgba(255,255,255,0.8) !important;
-}
-
-.layout-container {
-  display: flex;
-  max-width: 1200px;
+.page {
+  max-width: 1080px;
   margin: 0 auto;
-  padding-top: 64px;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 180px;
-  flex-shrink: 0;
-  padding: 20px 0;
-  position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-}
-
-.sidebar-menu {
-  background: var(--bg-card);
-  border-radius: 8px;
-  padding: 8px;
-  box-shadow: var(--shadow);
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 14px;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.menu-item:hover {
-  background: #fff5e6;
-  color: var(--primary-color);
-}
-
-.menu-item.router-link-active {
-  background: #fff5e6;
-  color: var(--primary-color);
-  font-weight: 500;
-}
-
-.menu-icon {
-  font-size: 18px;
-}
-
-.sidebar-user {
-  margin-top: 16px;
-  background: var(--bg-card);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: var(--shadow);
-}
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-info {
-  margin-top: 12px;
-}
-
-.user-name {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.user-desc {
-  display: block;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  min-width: 0;
+  padding: 18px;
 }
 
 .toast {
   position: fixed;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: 8px;
+  right: 16px;
+  bottom: 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
   color: #fff;
-  font-size: 14px;
-  z-index: 2000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  font-weight: 600;
 }
 
 .toast.success {
-  background: linear-gradient(135deg, #52c41a, #389e0d);
+  background: #2f855a;
 }
 
 .toast.error {
-  background: linear-gradient(135deg, #ff4d4f, #cf1322);
+  background: #c53030;
 }
 
-@media (max-width: 768px) {
-  .nav-search {
-    display: none;
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.25s;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 860px) {
+  .topbar {
+    grid-template-columns: 1fr;
   }
-  
-  .sidebar {
-    display: none;
-  }
-  
-  .layout-container {
-    padding-top: 54px;
-  }
-  
-  .main-content {
-    padding: 12px;
+
+  .top-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
