@@ -21,6 +21,10 @@
     <delete id="delete">
         DELETE FROM comment WHERE id = #{id}
     </delete>
+
+    <update id="updateLikeCount">
+        UPDATE comment SET like_count = #{count} WHERE id = #{id}
+    </update>
     
     <select id="countByPostId" resultType="int">
         SELECT COUNT(*) FROM comment WHERE post_id = #{postId}

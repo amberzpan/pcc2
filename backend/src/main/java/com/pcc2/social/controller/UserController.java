@@ -23,11 +23,18 @@ public class UserController {
         if (request == null || isBlank(request.getUsername()) || isBlank(request.getPassword())) {
             return Result.error("用户名和密码不能为空");
         }
+        if (containsSensitiveChars(request.getPassword())) {
+            return Result.error("密码包含非法字符");
+        }
+        String passwordPolicyError = validateRegisterPasswordPolicy(request.getPassword());
+        if (passwordPolicyError != null) {
+            return Result.error(passwordPolicyError);
+        }
         try {
             LoginResponse response = userService.register(request);
             return Result.success(response);
         } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
+            return Result.error(isBlank(e.getMessage()) ? "注册失败" : e.getMessage());
         }
     }
     
@@ -36,11 +43,14 @@ public class UserController {
         if (request == null || isBlank(request.getUsername()) || isBlank(request.getPassword())) {
             return Result.error("用户名和密码不能为空");
         }
+        if (containsSensitiveChars(request.getPassword())) {
+            return Result.error("密码包含非法字符");
+        }
         try {
             LoginResponse response = userService.login(request.getUsername(), request.getPassword());
             return Result.success(response);
         } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
+            return Result.error(isBlank(e.getMessage()) ? "登录失败" : e.getMessage());
         }
     }
     
@@ -79,7 +89,39 @@ public class UserController {
         return Result.success(userService.searchUsers(keyword, page, size));
     }
 
+    @GetMapping("/{userId}/profile")
+    public Result<?> getUserProfile(@PathVariable Long userId, HttpServletRequest request) {
+        Long currentUserId = (Long) request.getAttribute("userId");
+        try {
+            return Result.success(userService.getUserProfile(userId, currentUserId));
+        } catch (RuntimeException ex) {
+            return Result.error(ex.getMessage());
+        }
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean containsSensitiveChars(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.contains("\n") || value.contains("\r") || value.contains("\t");
+    }
+
+    private String validateRegisterPasswordPolicy(String password) {
+        if (password == null) {
+            return "用户名和密码不能为空";
+        }
+        if (password.length() < 8 || password.length() > 64) {
+            return "密码长度需在8到64个字符之间";
+        }
+        boolean hasLetter = password.matches(".*[A-Za-z].*");
+        boolean hasDigit = password.matches(".*\\d.*");
+        if (!hasLetter || !hasDigit) {
+            return "密码需同时包含字母和数字";
+        }
+        return null;
     }
 }

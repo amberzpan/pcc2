@@ -15,7 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,5 +65,33 @@ class PostServiceTest {
         ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
         org.mockito.Mockito.verify(postMapper).insert(captor.capture());
         assertEquals("/images/a.png", captor.getValue().getMediaUrl());
+    }
+
+    @Test
+    void getHotPostsShouldMarkStatusAsFalseWhenAnonymous() {
+        Post post = new Post();
+        post.setId(20L);
+        post.setUserId(5L);
+        when(postMapper.findHot(anyInt(), anyInt())).thenReturn(java.util.List.of(post));
+
+        java.util.List<Post> result = postService.getHotPosts(1, 10, null);
+
+        assertEquals(1, result.size());
+        assertFalse(result.get(0).getLiked());
+        assertFalse(result.get(0).getFavorited());
+        assertFalse(result.get(0).getFollowed());
+    }
+
+    @Test
+    void getDiscoverPostsShouldPassCurrentUserIdToMapper() {
+        Post post = new Post();
+        post.setId(21L);
+        post.setUserId(6L);
+        when(postMapper.findDiscover(eq(3L), anyInt(), anyInt())).thenReturn(java.util.List.of(post));
+
+        java.util.List<Post> result = postService.getDiscoverPosts(1, 10, 3L);
+
+        assertEquals(1, result.size());
+        org.mockito.Mockito.verify(postMapper).findDiscover(eq(3L), anyInt(), anyInt());
     }
 }

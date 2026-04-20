@@ -5,6 +5,7 @@ import com.pcc2.social.entity.Comment;
 import com.pcc2.social.entity.Post;
 import com.pcc2.social.entity.User;
 import com.pcc2.social.mapper.CommentMapper;
+import com.pcc2.social.mapper.CommentLikeMapper;
 import com.pcc2.social.mapper.PostMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.springframework.stereotype.Service;
@@ -14,20 +15,31 @@ import java.util.List;
 @Service
 public class CommentService {
     private final CommentMapper commentMapper;
+    private final CommentLikeMapper commentLikeMapper;
     private final PostMapper postMapper;
     private final UserMapper userMapper;
     
-    public CommentService(CommentMapper commentMapper, PostMapper postMapper, UserMapper userMapper) {
+    public CommentService(CommentMapper commentMapper, CommentLikeMapper commentLikeMapper, PostMapper postMapper, UserMapper userMapper) {
         this.commentMapper = commentMapper;
+        this.commentLikeMapper = commentLikeMapper;
         this.postMapper = postMapper;
         this.userMapper = userMapper;
     }
     
     public List<Comment> getCommentsByPostId(Long postId, String sort) {
-        List<Comment> comments = commentMapper.findByPostId(postId);
+        return getCommentsByPostId(postId, sort, null);
+    }
+
+    public List<Comment> getCommentsByPostId(Long postId, String sort, Long currentUserId) {
+        List<Comment> comments = new java.util.ArrayList<>(commentMapper.findByPostId(postId));
         
         for (Comment comment : comments) {
             comment.setLikeCount(comment.getLikeCount() != null ? comment.getLikeCount() : 0);
+            if (currentUserId != null) {
+                comment.setLiked(commentLikeMapper.exists(comment.getId(), currentUserId) > 0);
+            } else {
+                comment.setLiked(false);
+            }
         }
         
         if ("hot".equals(sort)) {
@@ -39,6 +51,27 @@ public class CommentService {
         }
         
         return comments;
+    }
+
+    @Transactional
+    public boolean toggleCommentLike(Long commentId, Long userId) {
+        Comment comment = commentMapper.findById(commentId);
+        if (comment == null) {
+            throw new RuntimeException("评论不存在");
+        }
+        boolean exists = commentLikeMapper.exists(commentId, userId) > 0;
+        if (exists) {
+            commentLikeMapper.delete(commentId, userId);
+        } else {
+            commentLikeMapper.insert(commentId, userId);
+        }
+        int count = commentLikeMapper.countByCommentId(commentId);
+        commentMapper.updateLikeCount(commentId, count);
+        return !exists;
+    }
+
+    public boolean getCommentLikeStatus(Long commentId, Long userId) {
+        return commentLikeMapper.exists(commentId, userId) > 0;
     }
     
     @Transactional

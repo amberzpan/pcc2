@@ -28,6 +28,26 @@
         LIMIT #{offset}, #{limit}
     </select>
 
+    <select id="findHot" resultType="com.pcc2.social.entity.Post">
+        SELECT p.*, u.username, u.nickname, u.avatar
+        FROM post p
+        LEFT JOIN user u ON p.user_id = u.id
+        ORDER BY p.like_count DESC, p.comment_count DESC, p.repost_count DESC, p.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="findDiscover" resultType="com.pcc2.social.entity.Post">
+        SELECT p.*, u.username, u.nickname, u.avatar
+        FROM post p
+        LEFT JOIN user u ON p.user_id = u.id
+        WHERE #{userId} IS NULL
+           OR p.user_id NOT IN (
+               SELECT following_id FROM follow WHERE follower_id = #{userId}
+           )
+        ORDER BY p.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
     <select id="search" resultType="com.pcc2.social.entity.Post">
         SELECT p.*, u.username, u.nickname, u.avatar
         FROM post p

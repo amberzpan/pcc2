@@ -38,6 +38,11 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/profile/:id',
+      name: 'profile-detail',
+      component: ProfileView
+    },
+    {
       path: '/favorites',
       name: 'favorites',
       component: FavoritesView,

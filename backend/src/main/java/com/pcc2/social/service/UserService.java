@@ -4,6 +4,7 @@ import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.dto.UserVO;
 import com.pcc2.social.entity.User;
+import com.pcc2.social.mapper.FollowMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Service
 public class UserService {
     private final UserMapper userMapper;
+    private final FollowMapper followMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Value("${jwt.secret}")
@@ -27,8 +29,9 @@ public class UserService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
     
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, FollowMapper followMapper) {
         this.userMapper = userMapper;
+        this.followMapper = followMapper;
     }
     
     public LoginResponse register(RegisterRequest request) {
@@ -77,7 +80,25 @@ public class UserService {
     
     public UserVO getCurrentUser(Long userId) {
         User user = userMapper.findById(userId);
-        return toUserVO(user);
+        UserVO vo = toUserVO(user);
+        if (vo != null) {
+            vo.setFollowed(false);
+        }
+        return vo;
+    }
+
+    public UserVO getUserProfile(Long targetUserId, Long currentUserId) {
+        User user = userMapper.findById(targetUserId);
+        UserVO vo = toUserVO(user);
+        if (vo == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        boolean followed = currentUserId != null
+                && !currentUserId.equals(targetUserId)
+                && followMapper.findByFollowerAndFollowing(currentUserId, targetUserId) != null;
+        vo.setFollowed(followed);
+        return vo;
     }
 
     public UserVO updateCurrentUser(Long userId, UserVO updateRequest) {
@@ -117,6 +138,8 @@ public class UserService {
         vo.setNickname(user.getNickname());
         vo.setAvatar(user.getAvatar());
         vo.setBio(user.getBio());
+        vo.setFollowersCount(user.getFollowersCount() == null ? 0 : user.getFollowersCount());
+        vo.setFollowingCount(user.getFollowingCount() == null ? 0 : user.getFollowingCount());
         return vo;
     }
     
@@ -138,11 +161,16 @@ public class UserService {
         if (request == null || isBlank(request.getUsername()) || isBlank(request.getPassword())) {
             throw new RuntimeException("用户名和密码不能为空");
         }
-        if (request.getUsername().trim().length() < 3 || request.getUsername().trim().length() > 20) {
+        String username = request.getUsername().trim();
+        String password = request.getPassword();
+        if (username.length() < 3 || username.length() > 20) {
             throw new RuntimeException("用户名长度需在3到20个字符之间");
         }
-        if (request.getPassword().length() < 6 || request.getPassword().length() > 64) {
-            throw new RuntimeException("密码长度需在6到64个字符之间");
+        if (password.length() < 8 || password.length() > 64) {
+            throw new RuntimeException("密码长度需在8到64个字符之间");
+        }
+        if (!password.matches(".*[A-Za-z].*") || !password.matches(".*\\d.*")) {
+            throw new RuntimeException("密码需同时包含字母和数字");
         }
     }
 

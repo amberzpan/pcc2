@@ -65,4 +65,38 @@ class PostControllerSearchTest {
         assertEquals(1, ((List<?>) result.getData()).size());
         verify(postService).searchPosts("hello", 1, 10, 7L);
     }
+
+    @Test
+    void hotShouldUseServiceAndReturnSuccess() {
+        List<Post> posts = new ArrayList<>();
+        Post post = new Post();
+        post.setId(3L);
+        posts.add(post);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("userId", 8L);
+        when(postService.getHotPosts(1, 10, 8L)).thenReturn(posts);
+
+        var result = postController.getHotPosts(1, 10, request);
+
+        assertEquals(200, result.getCode());
+        verify(postService).getHotPosts(1, 10, 8L);
+    }
+
+    @Test
+    void discoverShouldUseServiceAndReturnSuccess() {
+        List<Post> posts = new ArrayList<>();
+        Post post = new Post();
+        post.setId(4L);
+        posts.add(post);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("userId", 9L);
+        when(postService.getDiscoverPosts(1, 10, 9L)).thenReturn(posts);
+
+        var result = postController.getDiscoverPosts(1, 10, request);
+
+        assertEquals(200, result.getCode());
+        verify(postService).getDiscoverPosts(1, 10, 9L);
+    }
 }

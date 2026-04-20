@@ -1,60 +1,72 @@
 <template>
   <section class="feed-page">
-    <div class="panel switcher" v-if="isLoggedIn">
-      <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">全部动态</button>
-      <button :class="['switch-btn', mode === 'following' ? 'active' : '']" @click="changeMode('following')">关注动态</button>
-    </div>
-
-    <article v-for="post in posts" :key="post.id" class="panel post-card">
-      <header class="post-head">
-        <div>
-          <h3>{{ post.nickname || post.username || '匿名用户' }}</h3>
-          <p>{{ formatTime(post.createdAt) }}</p>
-        </div>
-        <button v-if="post.userId === currentUserId" class="danger-link" @click="removePost(post.id)">删除</button>
-      </header>
-
-      <p v-if="post.content" class="post-content">{{ post.content }}</p>
-      <img v-if="post.mediaUrl && post.mediaType === 'image'" class="media" :src="post.mediaUrl" alt="post media" />
-      <video v-if="post.mediaUrl && post.mediaType === 'video'" class="media" controls :src="post.mediaUrl"></video>
-
-      <div v-if="post.originalContent" class="quote">转发原文：{{ post.originalContent }}</div>
-
-      <footer class="post-actions">
-        <button class="action" :class="post.liked ? 'active' : ''" @click="togglePostLike(post)">赞 {{ post.likeCount || 0 }}</button>
-        <button class="action" @click="toggleComments(post)">评论 {{ post.commentCount || 0 }}</button>
-        <button class="action" :class="post.favorited ? 'active' : ''" @click="togglePostFavorite(post)">收藏</button>
-        <button class="action" v-if="post.userId !== currentUserId" @click="togglePostFollow(post)">{{ post.followed ? '取消关注' : '关注' }}</button>
-        <button class="action" @click="repost(post)">转发</button>
-      </footer>
-
-      <div class="comments" v-if="post.showComments">
-        <div class="comment-toolbar">
-          <select v-model="post.commentSort" @change="loadComments(post)">
-            <option value="time_desc">最新评论</option>
-            <option value="time_asc">最早评论</option>
-            <option value="hot">热门评论</option>
-          </select>
-        </div>
-        <div v-if="post.commentsLoading" class="hint">评论加载中...</div>
-        <template v-else>
-          <div v-if="post.comments.length === 0" class="hint">暂无评论</div>
-          <div class="comment-item" v-for="comment in post.comments" :key="comment.id">
-            <div class="comment-meta">
-              <strong>{{ comment.nickname || comment.username }}</strong>
-              <span>{{ formatTime(comment.createdAt) }}</span>
-              <button v-if="comment.userId === currentUserId" class="danger-link" @click="removeComment(post, comment.id)">删除</button>
-            </div>
-            <p>{{ comment.content }}</p>
-          </div>
-        </template>
-
-        <div class="comment-editor" v-if="isLoggedIn">
-          <input v-model="post.newComment" placeholder="写评论..." @keyup.enter="submitComment(post)" />
-          <button @click="submitComment(post)">发布</button>
+    <div class="panel guest-hero" v-if="!isLoggedIn">
+      <div class="hero-copy">
+        <p class="eyebrow">SimpleSocial 社区</p>
+        <h1>看见正在发生的讨论，加入你关心的话题。</h1>
+        <p class="hero-desc">
+          不登录也能浏览公开内容；注册后可关注创作者、参与评论，并构建属于你的高质量信息流。
+        </p>
+        <div class="hero-actions">
+          <router-link class="hero-btn solid" to="/register">立即注册</router-link>
+          <router-link class="hero-btn ghost" to="/login">已有账号，去登录</router-link>
         </div>
       </div>
-    </article>
+      <div class="hero-highlights">
+        <article class="highlight-item">
+          <strong>热门追踪</strong>
+          <span>实时查看社区正在讨论的高热内容。</span>
+        </article>
+        <article class="highlight-item">
+          <strong>发现作者</strong>
+          <span>从公开动态里找到有价值的长期创作者。</span>
+        </article>
+        <article class="highlight-item">
+          <strong>轻量参与</strong>
+          <span>登录后即可点赞、收藏、评论并管理个人主页。</span>
+        </article>
+      </div>
+    </div>
+
+    <div class="panel switcher">
+      <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">全部动态</button>
+      <button :class="['switch-btn', mode === 'hot' ? 'active' : '']" @click="changeMode('hot')">热门帖</button>
+      <button
+        :class="['switch-btn', mode === 'following' ? 'active' : '']"
+        :disabled="!isLoggedIn"
+        :title="isLoggedIn ? '' : '登录后可查看关注动态'"
+        @click="changeMode('following')"
+      >
+        关注动态
+      </button>
+      <button :class="['switch-btn', mode === 'discover' ? 'active' : '']" @click="changeMode('discover')">发现动态</button>
+    </div>
+
+    <div class="panel mode-intro">
+      <div>
+        <h2>{{ modeMeta.label }}</h2>
+        <p>{{ modeMeta.description }}</p>
+      </div>
+      <div class="mode-badge">{{ modeMeta.mode.toUpperCase() }}</div>
+    </div>
+
+    <PostCard
+      v-for="post in posts"
+      :key="post.id"
+      :post="post"
+      :current-user-id="currentUserId"
+      :is-logged-in="isLoggedIn"
+      @delete-post="removePost"
+      @toggle-like="togglePostLike"
+      @toggle-comments="toggleComments"
+      @toggle-favorite="togglePostFavorite"
+      @toggle-follow="togglePostFollow"
+      @repost="repost"
+      @load-comments="loadComments"
+      @submit-comment="submitComment"
+      @delete-comment="removeComment"
+      @toggle-comment-like="toggleCommentLike"
+    />
 
     <div class="panel empty" v-if="!loading && posts.length === 0">当前没有内容</div>
 
@@ -64,23 +76,32 @@
 </template>
 
 <script setup>
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   createComment,
   createPost,
   deleteComment as apiDeleteComment,
   deletePost,
+  getDiscoverPosts,
   getComments,
   getFollowingPosts,
+  getHotPosts,
   getPostList,
+  toggleCommentLike as apiToggleCommentLike,
   toggleFavorite,
   toggleFollow,
   toggleLike
 } from '@/api'
+import PostCard from '@/components/PostCard.vue'
+import { normalizeComments, normalizePostList } from '@/utils/post-utils'
+import { getFeedModeMeta, normalizeFeedMode, resolveAccessibleFeedMode } from '@/utils/home-mode'
 
 const user = inject('user')
 const isLoggedIn = inject('isLoggedIn')
 const showToast = inject('showToast')
+const route = useRoute()
+const router = useRouter()
 
 const posts = ref([])
 const page = ref(1)
@@ -90,15 +111,22 @@ const loading = ref(false)
 const mode = ref('all')
 
 const currentUserId = computed(() => user.value?.id)
+const modeMeta = computed(() => getFeedModeMeta(mode.value, isLoggedIn.value))
 
-const normalizePosts = (items) => items.map((post) => ({
-  ...post,
-  showComments: false,
-  comments: [],
-  commentsLoading: false,
-  commentSort: 'time_desc',
-  newComment: ''
-}))
+const setMode = (nextMode, syncRoute = true) => {
+  const accessible = resolveAccessibleFeedMode(nextMode, isLoggedIn.value)
+  mode.value = accessible
+  if (!syncRoute) {
+    return
+  }
+  const query = { ...route.query }
+  if (accessible === 'all') {
+    delete query.mode
+  } else {
+    query.mode = accessible
+  }
+  router.replace({ path: '/', query })
+}
 
 const fetchPosts = async (reset = true) => {
   if (reset) {
@@ -108,14 +136,21 @@ const fetchPosts = async (reset = true) => {
 
   loading.value = true
   try {
-    const api = mode.value === 'following' ? getFollowingPosts : getPostList
+    let api = getPostList
+    if (mode.value === 'following') {
+      api = getFollowingPosts
+    } else if (mode.value === 'hot') {
+      api = getHotPosts
+    } else if (mode.value === 'discover') {
+      api = getDiscoverPosts
+    }
     const res = await api(page.value, size)
     if (res.code !== 200 || !Array.isArray(res.data)) {
       posts.value = []
       hasMore.value = false
       return
     }
-    const next = normalizePosts(res.data)
+    const next = normalizePostList(res.data)
     posts.value = reset ? next : posts.value.concat(next)
     hasMore.value = next.length === size
   } catch {
@@ -131,7 +166,7 @@ const loadMore = async () => {
 }
 
 const changeMode = async (target) => {
-  mode.value = target
+  setMode(target)
   await fetchPosts(true)
 }
 
@@ -228,7 +263,7 @@ const loadComments = async (post) => {
   try {
     const res = await getComments(post.id, post.commentSort)
     if (res.code === 200 && Array.isArray(res.data)) {
-      post.comments = res.data
+      post.comments = normalizeComments(res.data)
     }
   } catch {
     showToast('评论加载失败', 'error')
@@ -245,7 +280,11 @@ const submitComment = async (post) => {
   try {
     const res = await createComment({ postId: post.id, content: post.newComment.trim() })
     if (res.code === 200) {
-      post.comments.push(res.data)
+      post.comments.push({
+        ...res.data,
+        liked: false,
+        likeCount: res.data?.likeCount || 0
+      })
       post.commentCount = (post.commentCount || 0) + 1
       post.newComment = ''
       showToast('评论成功')
@@ -257,7 +296,7 @@ const submitComment = async (post) => {
   }
 }
 
-const removeComment = async (post, commentId) => {
+const removeComment = async ({ post, commentId }) => {
   try {
     const res = await apiDeleteComment(commentId)
     if (res.code === 200) {
@@ -272,15 +311,45 @@ const removeComment = async (post, commentId) => {
   }
 }
 
-const formatTime = (time) => {
-  if (!time) return ''
-  const date = new Date(time)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleString('zh-CN', { hour12: false })
+const toggleCommentLike = async ({ post, comment }) => {
+  if (!isLoggedIn.value) {
+    showToast('请先登录', 'error')
+    return
+  }
+  try {
+    const res = await apiToggleCommentLike(comment.id)
+    if (res.code === 200) {
+      comment.liked = !!res.data.liked
+      comment.likeCount = Math.max(0, (comment.likeCount || 0) + (comment.liked ? 1 : -1))
+      if (post.commentSort === 'hot') {
+        post.comments = [...post.comments].sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0))
+      }
+    }
+  } catch {
+    showToast('评论点赞失败', 'error')
+  }
 }
 
 onMounted(() => {
+  const queryMode = normalizeFeedMode((route.query.mode || '').toString())
+  setMode(queryMode)
   fetchPosts(true)
+})
+
+watch(() => route.query.mode, (value) => {
+  const next = normalizeFeedMode((value || '').toString())
+  const accessible = resolveAccessibleFeedMode(next, isLoggedIn.value)
+  if (accessible !== mode.value) {
+    mode.value = accessible
+    fetchPosts(true)
+  }
+})
+
+watch(() => isLoggedIn.value, (loggedIn) => {
+  if (!loggedIn && mode.value === 'following') {
+    setMode('all')
+    fetchPosts(true)
+  }
 })
 </script>
 
@@ -301,6 +370,90 @@ onMounted(() => {
 .switcher {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.guest-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.95fr);
+  gap: 14px;
+  border-color: #eecfb8;
+  background:
+    radial-gradient(circle at 14% 18%, #fff4e8 0, transparent 43%),
+    radial-gradient(circle at 90% 85%, #ffe4ce 0, transparent 45%),
+    #fffaf4;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(1.2rem, 1.3rem + 0.4vw, 1.62rem);
+  line-height: 1.35;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a7421d;
+}
+
+.hero-desc {
+  margin: 10px 0 0;
+  color: #705f4c;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 8px 13px;
+  border: 1px solid #e8c9b1;
+}
+
+.hero-btn.solid {
+  color: #fff;
+  border-color: #f25a29;
+  background: #f25a29;
+}
+
+.hero-btn.ghost {
+  color: #7a3b20;
+  background: #fff7ef;
+}
+
+.hero-highlights {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.highlight-item {
+  border: 1px solid #ecd7c5;
+  border-radius: 12px;
+  background: #fffdf9;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.highlight-item strong {
+  font-size: 0.92rem;
+}
+
+.highlight-item span {
+  color: #786955;
+  line-height: 1.45;
+  font-size: 0.86rem;
 }
 
 .switch-btn {
@@ -312,135 +465,52 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.switch-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .switch-btn.active {
   background: #f25a29;
   border-color: #f25a29;
   color: #fff;
 }
 
-.post-head {
+.mode-intro {
   display: flex;
   justify-content: space-between;
-  align-items: start;
   gap: 12px;
+  align-items: center;
+  background: linear-gradient(125deg, #fff4ea 0%, #fffdf8 58%, #ffeedf 100%);
 }
 
-.post-head h3 {
+.mode-intro h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.02rem;
 }
 
-.post-head p {
+.mode-intro p {
   margin: 4px 0 0;
   color: #7a6d5a;
-  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
-.post-content {
-  margin: 12px 0;
-  white-space: pre-wrap;
-}
-
-.media {
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 6px;
-  max-height: 460px;
-  object-fit: cover;
-}
-
-.quote {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #7a6d5a;
-  border-left: 3px solid #f25a29;
-  padding-left: 10px;
-}
-
-.post-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.action {
-  border: 1px solid #e7dccf;
-  background: #fff;
+.mode-badge {
+  flex: 0 0 auto;
+  border: 1px solid #efcfb4;
   border-radius: 999px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-weight: 600;
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #a8431e;
 }
 
-.action.active {
-  background: #f25a29;
-  border-color: #f25a29;
-  color: #fff;
-}
-
-.danger-link {
-  border: 0;
-  background: transparent;
-  color: #cc2a2a;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.comments {
-  margin-top: 12px;
-  border-top: 1px dashed #e7dccf;
-  padding-top: 12px;
-}
-
-.comment-toolbar {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.comment-toolbar select {
-  border: 1px solid #e7dccf;
-  border-radius: 8px;
-  padding: 6px;
-}
-
-.comment-item {
-  padding: 10px 0;
-  border-bottom: 1px dashed #f0e6db;
-}
-
-.comment-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 0.86rem;
-  color: #7a6d5a;
-}
-
-.comment-meta strong {
-  color: #2d2418;
-}
-
-.comment-editor {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.comment-editor input {
-  border: 1px solid #e7dccf;
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-
-.comment-editor button {
-  border: 0;
-  border-radius: 10px;
-  background: #f25a29;
-  color: #fff;
-  font-weight: 700;
-  padding: 0 12px;
+@media (max-width: 860px) {
+  .guest-hero {
+    grid-template-columns: 1fr;
+  }
 }
 
 .load-more {

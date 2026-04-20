@@ -33,6 +33,7 @@ request.interceptors.response.use(
 export const login = (data) => request.post('/user/login', data)
 export const register = (data) => request.post('/user/register', data)
 export const getUserInfo = () => request.get('/user/info')
+export const getUserProfile = (userId) => request.get(`/user/${userId}/profile`)
 export const updateUserInfo = (data) => request.put('/user/info', data)
 export const searchUsers = (keyword, page = 1, size = 10) => request.get('/user/search', { params: { keyword, page, size } })
 
@@ -41,6 +42,8 @@ export const getUserPosts = (userId, page, size) => request.get(`/post/user/${us
 export const getPost = (id) => request.get(`/post/${id}`)
 export const searchPosts = (keyword, page = 1, size = 10) => request.get('/post/search', { params: { keyword, page, size } })
 export const getFollowingPosts = (page = 1, size = 10) => request.get('/post/following', { params: { page, size } })
+export const getHotPosts = (page = 1, size = 10) => request.get('/post/hot', { params: { page, size } })
+export const getDiscoverPosts = (page = 1, size = 10) => request.get('/post/discover', { params: { page, size } })
 export const createPost = (data) => request.post('/post', data)
 export const deletePost = (id) => request.delete(`/post/${id}`)
 export const uploadImage = (file) => {
@@ -57,6 +60,8 @@ export const uploadVideo = (file) => {
 export const getComments = (postId, sort = 'time_desc') => request.get(`/comment/post/${postId}`, { params: { sort } })
 export const createComment = (data) => request.post('/comment', data)
 export const deleteComment = (id) => request.delete(`/comment/${id}`)
+export const toggleCommentLike = (commentId) => request.post(`/comment/${commentId}/like`)
+export const getCommentLikeStatus = (commentId) => request.get(`/comment/${commentId}/like/status`)
 
 export const toggleLike = (postId) => request.post(`/like/${postId}`)
 export const getLikeStatus = (postId) => request.get(`/like/status/${postId}`)

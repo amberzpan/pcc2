@@ -11,6 +11,8 @@ public class User {
     private String nickname;
     private String avatar;
     private String bio;
+    private Integer followersCount;
+    private Integer followingCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -60,6 +62,22 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public Integer getFollowersCount() {
+        return followersCount;
+    }
+
+    public void setFollowersCount(Integer followersCount) {
+        this.followersCount = followersCount;
+    }
+
+    public Integer getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(Integer followingCount) {
+        this.followingCount = followingCount;
     }
 
     public LocalDateTime getCreatedAt() {

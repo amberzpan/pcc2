@@ -47,6 +47,17 @@ CREATE TABLE IF NOT EXISTS `comment` (
     FOREIGN KEY (`user_id`) REFERENCES `user`(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 评论点赞表
+CREATE TABLE IF NOT EXISTS `comment_like` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+    `comment_id` BIGINT NOT NULL COMMENT '被点赞评论ID',
+    `user_id` BIGINT NOT NULL COMMENT '点赞者ID',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`comment_id`) REFERENCES `comment`(id) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user`(id) ON DELETE CASCADE,
+    UNIQUE KEY `uk_comment_user` (`comment_id`, `user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 点赞表
 CREATE TABLE IF NOT EXISTS `like_record` (
     `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -85,6 +96,7 @@ CREATE TABLE IF NOT EXISTS `favorite` (
 CREATE INDEX idx_post_user_id ON post(user_id);
 CREATE INDEX idx_post_created_at ON post(created_at);
 CREATE INDEX idx_comment_post_id ON comment(post_id);
+CREATE INDEX idx_comment_like_comment_id ON comment_like(comment_id);
 CREATE INDEX idx_follow_follower_id ON follow(follower_id);
 CREATE INDEX idx_follow_following_id ON follow(following_id);
 CREATE INDEX idx_favorite_user_id ON favorite(user_id);

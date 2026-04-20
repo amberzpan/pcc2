@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/comment")
@@ -21,9 +23,32 @@ public class CommentController {
     @GetMapping("/post/{postId}")
     public Result<List<Comment>> getComments(
             @PathVariable Long postId,
-            @RequestParam(defaultValue = "time_desc") String sort) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId, sort);
+            @RequestParam(defaultValue = "time_desc") String sort,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        List<Comment> comments = commentService.getCommentsByPostId(postId, sort, userId);
         return Result.success(comments);
+    }
+
+    @PostMapping("/{commentId}/like")
+    public Result<Map<String, Object>> toggleCommentLike(@PathVariable Long commentId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error(401, "未登录");
+        }
+        boolean liked = commentService.toggleCommentLike(commentId, userId);
+        Map<String, Object> result = new HashMap<>();
+        result.put("liked", liked);
+        return Result.success(result);
+    }
+
+    @GetMapping("/{commentId}/like/status")
+    public Result<Map<String, Boolean>> getCommentLikeStatus(@PathVariable Long commentId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        boolean liked = userId != null && commentService.getCommentLikeStatus(commentId, userId);
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("liked", liked);
+        return Result.success(result);
     }
     
     @PostMapping

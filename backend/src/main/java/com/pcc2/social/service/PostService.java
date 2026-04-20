@@ -76,6 +76,24 @@ public class PostService {
         return posts;
     }
 
+    public List<Post> getHotPosts(int page, int size, Long currentUserId) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findHot(offset, safeSize);
+        hydratePostStatus(posts, currentUserId);
+        return posts;
+    }
+
+    public List<Post> getDiscoverPosts(int page, int size, Long currentUserId) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findDiscover(currentUserId, offset, safeSize);
+        hydratePostStatus(posts, currentUserId);
+        return posts;
+    }
+
     public List<Post> searchPosts(String keyword, int page, int size, Long currentUserId) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return java.util.Collections.emptyList();
@@ -171,5 +189,25 @@ public class PostService {
     
     public void updateCommentCount(Long postId, int count) {
         postMapper.updateCommentCount(postId, count);
+    }
+
+    private void hydratePostStatus(List<Post> posts, Long currentUserId) {
+        if (currentUserId == null) {
+            for (Post post : posts) {
+                post.setLiked(false);
+                post.setFavorited(false);
+                post.setFollowed(false);
+            }
+            return;
+        }
+        for (Post post : posts) {
+            post.setLiked(likeRecordMapper.findByPostIdAndUserId(post.getId(), currentUserId) != null);
+            post.setFavorited(favoriteMapper.findByUserAndPost(currentUserId, post.getId()) != null);
+            if (!post.getUserId().equals(currentUserId)) {
+                post.setFollowed(followMapper.findByFollowerAndFollowing(currentUserId, post.getUserId()) != null);
+            } else {
+                post.setFollowed(false);
+            }
+        }
     }
 }

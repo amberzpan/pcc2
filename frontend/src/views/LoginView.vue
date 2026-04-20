@@ -1,18 +1,31 @@
 <template>
   <section class="auth-page">
     <article class="card">
+      <form class="auth-form" @submit.prevent="submit">
       <h2>欢迎回来</h2>
       <p class="tip">登录后即可发布、评论、收藏</p>
 
       <label>用户名</label>
-      <input v-model="form.username" placeholder="请输入用户名" />
+      <input
+        v-model="form.username"
+        placeholder="请输入用户名"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+      />
 
       <label>密码</label>
-      <input v-model="form.password" type="password" placeholder="请输入密码" />
+      <input
+        v-model="form.password"
+        type="password"
+        placeholder="请输入密码"
+        autocomplete="current-password"
+      />
 
-      <button class="btn" :disabled="loading" @click="submit">{{ loading ? '登录中...' : '登录' }}</button>
+      <button class="btn" type="submit" :disabled="loading">{{ loading ? '登录中...' : '登录' }}</button>
 
       <p class="tip">还没有账号？<router-link to="/register">去注册</router-link></p>
+      </form>
     </article>
   </section>
 </template>
@@ -57,22 +70,29 @@ const submit = async () => {
     loading.value = false
   }
 }
+
 </script>
 
 <style scoped>
 .auth-page {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 80px);
   display: grid;
   place-items: center;
+  padding: 24px 12px;
 }
 
 .card {
-  width: min(420px, 100%);
+  width: min(560px, 100%);
   border: 1px solid #e7dccf;
   border-radius: 18px;
   background: #fffdf8;
-  padding: 18px;
-  box-shadow: 0 8px 24px rgba(66, 45, 17, 0.06);
+  padding: 24px;
+  box-shadow: 0 18px 40px rgba(66, 45, 17, 0.1);
+}
+
+.auth-form {
+  display: grid;
+  gap: 2px;
 }
 
 h2 {

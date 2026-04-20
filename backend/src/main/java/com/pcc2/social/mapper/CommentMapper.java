@@ -11,5 +11,6 @@ public interface CommentMapper {
     List<Comment> findByPostId(@Param("postId") Long postId);
     int insert(Comment comment);
     int delete(Long id);
+    int updateLikeCount(@Param("id") Long id, @Param("count") Integer count);
     int countByPostId(Long postId);
 }

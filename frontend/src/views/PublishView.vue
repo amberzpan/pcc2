@@ -6,12 +6,8 @@
 
       <div class="upload-row">
         <label class="upload">
-          选择图片
-          <input type="file" accept="image/*" @change="onImage" />
-        </label>
-        <label class="upload">
-          选择视频
-          <input type="file" accept="video/*" @change="onVideo" />
+          添加媒体（图片/视频）
+          <input type="file" accept="image/*,video/*" @change="onMedia" />
         </label>
       </div>
 
@@ -41,49 +37,43 @@ const previewImage = ref('')
 const previewVideo = ref('')
 const publishing = ref(false)
 
-const onImage = async (event) => {
+const onMedia = async (event) => {
   const file = event.target.files?.[0]
   if (!file) return
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('图片不能超过 5MB', 'error')
+  const isVideo = file.type.startsWith('video/')
+  const isImage = file.type.startsWith('image/')
+  if (!isVideo && !isImage) {
+    showToast('仅支持图片或视频', 'error')
     return
   }
 
-  try {
-    const res = await uploadImage(file)
-    if (res.code === 200) {
-      mediaUrl.value = res.data.url
-      mediaType.value = 'image'
-      previewImage.value = URL.createObjectURL(file)
-      previewVideo.value = ''
-    } else {
-      showToast(res.message || '图片上传失败', 'error')
-    }
-  } catch {
-    showToast('图片上传失败', 'error')
+  if (isImage && file.size > 5 * 1024 * 1024) {
+    showToast('图片不能超过 5MB', 'error')
+    return
   }
-}
-
-const onVideo = async (event) => {
-  const file = event.target.files?.[0]
-  if (!file) return
-  if (file.size > 50 * 1024 * 1024) {
+  if (isVideo && file.size > 50 * 1024 * 1024) {
     showToast('视频不能超过 50MB', 'error')
     return
   }
 
   try {
-    const res = await uploadVideo(file)
+    const uploader = isVideo ? uploadVideo : uploadImage
+    const res = await uploader(file)
     if (res.code === 200) {
       mediaUrl.value = res.data.url
-      mediaType.value = 'video'
-      previewVideo.value = URL.createObjectURL(file)
-      previewImage.value = ''
+      mediaType.value = isVideo ? 'video' : 'image'
+      if (isVideo) {
+        previewVideo.value = URL.createObjectURL(file)
+        previewImage.value = ''
+      } else {
+        previewImage.value = URL.createObjectURL(file)
+        previewVideo.value = ''
+      }
     } else {
-      showToast(res.message || '视频上传失败', 'error')
+      showToast(res.message || '媒体上传失败', 'error')
     }
   } catch {
-    showToast('视频上传失败', 'error')
+    showToast('媒体上传失败', 'error')
   }
 }
 

@@ -9,6 +9,9 @@ public class UserVO {
     private String nickname;
     private String avatar;
     private String bio;
+    private Integer followersCount;
+    private Integer followingCount;
+    private Boolean followed;
 
     public Long getId() {
         return id;
@@ -48,5 +51,29 @@ public class UserVO {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public Integer getFollowersCount() {
+        return followersCount;
+    }
+
+    public void setFollowersCount(Integer followersCount) {
+        this.followersCount = followersCount;
+    }
+
+    public Integer getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(Integer followingCount) {
+        this.followingCount = followingCount;
+    }
+
+    public Boolean getFollowed() {
+        return followed;
+    }
+
+    public void setFollowed(Boolean followed) {
+        this.followed = followed;
     }
 }

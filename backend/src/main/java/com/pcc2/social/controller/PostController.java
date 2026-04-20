@@ -62,6 +62,24 @@ public class PostController {
         }
         return Result.success(postService.getFollowingPosts(userId, page, size));
     }
+
+    @GetMapping("/hot")
+    public Result<?> getHotPosts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(postService.getHotPosts(page, size, userId));
+    }
+
+    @GetMapping("/discover")
+    public Result<?> getDiscoverPosts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(postService.getDiscoverPosts(page, size, userId));
+    }
     
     @GetMapping("/user/{userId}")
     public Result<?> getUserPosts(

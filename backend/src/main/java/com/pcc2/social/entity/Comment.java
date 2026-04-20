@@ -16,6 +16,7 @@ public class Comment {
     private String username;
     private String nickname;
     private String avatar;
+    private Boolean liked;
 
     public Long getId() {
         return id;
@@ -95,5 +96,13 @@ public class Comment {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public Boolean getLiked() {
+        return liked;
+    }
+
+    public void setLiked(Boolean liked) {
+        this.liked = liked;
     }
 }

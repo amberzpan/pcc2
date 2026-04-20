@@ -18,7 +18,7 @@ npm run dev
 
 - **Backend**: http://localhost:9090
 - **Frontend**: http://localhost:5173
-- **Test account**: `aaa` / `aaa`
+- **Test account**: `aaa` / `aaa12345`
 
 ## Project Structure
 

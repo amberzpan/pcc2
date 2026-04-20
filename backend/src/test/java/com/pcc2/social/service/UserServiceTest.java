@@ -3,6 +3,7 @@ package com.pcc2.social.service;
 import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.entity.User;
+import com.pcc2.social.mapper.FollowMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +15,11 @@ import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +28,9 @@ class UserServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private FollowMapper followMapper;
 
     @InjectMocks
     private UserService userService;
@@ -53,10 +61,37 @@ class UserServiceTest {
     @Test
     void registerShouldRejectShortPassword() {
         RegisterRequest request = new RegisterRequest();
-        request.setUsername("u");
+        request.setUsername("user1");
         request.setPassword("123");
 
-        assertThrows(RuntimeException.class, () -> userService.register(request));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.register(request));
+
+        assertTrue(ex.getMessage().contains("密码长度"));
+        verify(userMapper, never()).findByUsername(anyString());
+    }
+
+    @Test
+    void registerShouldRejectPasswordWithoutLetter() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user2");
+        request.setPassword("12345678");
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.register(request));
+
+        assertTrue(ex.getMessage().contains("字母和数字"));
+        verify(userMapper, never()).findByUsername(anyString());
+    }
+
+    @Test
+    void registerShouldRejectPasswordWithoutDigit() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user3");
+        request.setPassword("abcdefgh");
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.register(request));
+
+        assertTrue(ex.getMessage().contains("字母和数字"));
+        verify(userMapper, never()).findByUsername(anyString());
     }
 
     @Test
@@ -69,7 +104,7 @@ class UserServiceTest {
         configureJwtFields();
         RegisterRequest request = new RegisterRequest();
         request.setUsername("userA");
-        request.setPassword("123456");
+        request.setPassword("abc12345");
         request.setNickname("A");
 
         when(userMapper.findByUsername("userA")).thenReturn(null);
@@ -110,5 +145,39 @@ class UserServiceTest {
         org.junit.jupiter.api.Assertions.assertEquals("new-name", response.getNickname());
         org.junit.jupiter.api.Assertions.assertEquals("new-bio", response.getBio());
         verify(userMapper).update(any(User.class));
+    }
+
+    @Test
+    void getUserProfileShouldExposeFollowCountsAndFollowStatus() {
+        User target = new User();
+        target.setId(11L);
+        target.setUsername("target");
+        target.setFollowersCount(9);
+        target.setFollowingCount(3);
+
+        when(userMapper.findById(11L)).thenReturn(target);
+        when(followMapper.findByFollowerAndFollowing(2L, 11L)).thenReturn(new com.pcc2.social.entity.Follow());
+
+        com.pcc2.social.dto.UserVO profile = userService.getUserProfile(11L, 2L);
+
+        org.junit.jupiter.api.Assertions.assertEquals(9, profile.getFollowersCount());
+        org.junit.jupiter.api.Assertions.assertEquals(3, profile.getFollowingCount());
+        org.junit.jupiter.api.Assertions.assertTrue(profile.getFollowed());
+    }
+
+    @Test
+    void loginTokenShouldNotContainRawPassword() {
+        configureJwtFields();
+        User user = new User();
+        user.setId(20L);
+        user.setUsername("safe-user");
+        user.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("abc12345"));
+
+        when(userMapper.findByUsername("safe-user")).thenReturn(user);
+
+        LoginResponse response = userService.login("safe-user", "abc12345");
+
+        assertNotNull(response.getToken());
+        assertFalse(response.getToken().contains("abc12345"));
     }
 }

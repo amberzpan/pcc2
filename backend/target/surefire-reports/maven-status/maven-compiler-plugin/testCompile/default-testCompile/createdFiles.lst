@@ -1,0 +1,5 @@
+com\pcc2\social\controller\UserControllerValidationTest.class
+com\pcc2\social\controller\PostControllerSearchTest.class
+com\pcc2\social\service\UserServiceTest.class
+com\pcc2\social\service\PostServiceTest.class
+com\pcc2\social\interceptor\JwtInterceptorTest.class

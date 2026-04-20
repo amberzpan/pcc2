@@ -9,6 +9,7 @@ E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\Post.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\exception\GlobalExceptionHandler.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\controller\FollowController.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\User.java
+E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\CommentLikeMapper.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\LikeRecordMapper.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\CommentRequest.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\Comment.java
