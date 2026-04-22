@@ -2,7 +2,6 @@ package com.pcc2.social.controller;
 
 import com.pcc2.social.entity.Post;
 import com.pcc2.social.service.PostService;
-import com.pcc2.social.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,9 +21,6 @@ class PostControllerSearchTest {
 
     @Mock
     private PostService postService;
-
-    @Mock
-    private UserService userService;
 
     @InjectMocks
     private PostController postController;
@@ -84,19 +80,20 @@ class PostControllerSearchTest {
     }
 
     @Test
-    void discoverShouldUseServiceAndReturnSuccess() {
-        List<Post> posts = new ArrayList<>();
-        Post post = new Post();
-        post.setId(4L);
-        posts.add(post);
-
+    void hotShouldRejectAnonymousVisitor() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute("userId", 9L);
-        when(postService.getDiscoverPosts(1, 10, 9L)).thenReturn(posts);
 
-        var result = postController.getDiscoverPosts(1, 10, request);
+        var result = postController.getHotPosts(1, 10, request);
 
-        assertEquals(200, result.getCode());
-        verify(postService).getDiscoverPosts(1, 10, 9L);
+        assertEquals(401, result.getCode());
+    }
+
+    @Test
+    void followingShouldRejectAnonymousVisitor() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        var result = postController.getFollowingPosts(1, 10, request);
+
+        assertEquals(401, result.getCode());
     }
 }

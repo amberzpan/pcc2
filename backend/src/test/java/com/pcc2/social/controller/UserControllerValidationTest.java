@@ -125,4 +125,37 @@ class UserControllerValidationTest {
 
         verify(userService, never()).register(any());
     }
+
+    @Test
+    void updateInfoShouldRejectBlankNickname() throws Exception {
+        UserService userService = mock(UserService.class);
+        UserController controller = new UserController(userService);
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/user/info")
+                        .requestAttr("userId", 11L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nickname\":\"   \",\"bio\":\"bio\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.message").value("昵称不能为空"));
+    }
+
+    @Test
+    void changePasswordShouldRejectInvalidNewPassword() throws Exception {
+        UserService userService = mock(UserService.class);
+        UserController controller = new UserController(userService);
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        when(userService.validatePasswordRequest(any())).thenReturn("新密码需为8-24位且包含字母和数字");
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/user/password")
+                        .requestAttr("userId", 11L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"oldPassword\":\"abc12345\",\"newPassword\":\"12345678\",\"confirmPassword\":\"12345678\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(400));
+
+        verify(userService, never()).changePassword(any(), any(), any());
+    }
 }

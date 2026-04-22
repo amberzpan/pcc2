@@ -77,11 +77,11 @@ class UserControllerLoginFlowTest {
         LoginResponse response = new LoginResponse();
         response.setToken("token-login-456");
         response.setUser(vo);
-        when(userService.login(eq("aaa"), eq("aaa"))).thenReturn(response);
+        when(userService.login(eq("aaa"), eq("aaa12345"))).thenReturn(response);
 
         LoginRequest req = new LoginRequest();
         req.setUsername("aaa");
-        req.setPassword("aaa");
+        req.setPassword("aaa12345");
 
         mockMvc.perform(post("/api/user/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,6 +91,20 @@ class UserControllerLoginFlowTest {
                 .andExpect(jsonPath("$.data.token").value("token-login-456"))
                 .andExpect(jsonPath("$.data.user.id").value(8));
 
-        verify(userService).login("aaa", "aaa");
+        verify(userService).login("aaa", "aaa12345");
+    }
+
+    @Test
+    void changePasswordShouldCallServiceWhenPayloadValid() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/user/password")
+                        .requestAttr("userId", 8L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"oldPassword\":\"aaa12345\",\"newPassword\":\"abc12345\",\"confirmPassword\":\"abc12345\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+
+        verify(userService).changePassword(8L, "aaa12345", "abc12345");
     }
 }

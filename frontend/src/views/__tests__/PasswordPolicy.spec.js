@@ -6,7 +6,14 @@ describe('register password policy', () => {
   it('should reject short passwords', () => {
     assert.deepEqual(validateRegisterPassword('abc123'), {
       valid: false,
-      message: '密码长度需在 8 到 64 位之间'
+      message: '密码长度需在 8 到 24 位之间'
+    })
+  })
+
+  it('should reject overlong passwords', () => {
+    assert.deepEqual(validateRegisterPassword('ab12345678901234567890123X'), {
+      valid: false,
+      message: '密码长度需在 8 到 24 位之间'
     })
   })
 

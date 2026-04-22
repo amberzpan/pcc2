@@ -1,9 +1,9 @@
-export function validateRegisterPassword(password) {
+function validatePasswordStrength(password) {
   const value = typeof password === 'string' ? password : ''
-  if (value.length < 8 || value.length > 64) {
+  if (value.length < 8 || value.length > 24) {
     return {
       valid: false,
-      message: '密码长度需在 8 到 64 位之间'
+      message: '密码长度需在 8 到 24 位之间'
     }
   }
 
@@ -20,4 +20,31 @@ export function validateRegisterPassword(password) {
     valid: true,
     message: ''
   }
+}
+
+export function validateRegisterPassword(password) {
+  return validatePasswordStrength(password)
+}
+
+export function validateChangePasswordForm(form) {
+  const payload = form || {}
+  const oldPassword = typeof payload.oldPassword === 'string' ? payload.oldPassword : ''
+  const newPassword = typeof payload.newPassword === 'string' ? payload.newPassword : ''
+  const confirmPassword = typeof payload.confirmPassword === 'string' ? payload.confirmPassword : ''
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return {
+      valid: false,
+      message: '请完整填写密码项'
+    }
+  }
+
+  if (newPassword !== confirmPassword) {
+    return {
+      valid: false,
+      message: '两次新密码不一致'
+    }
+  }
+
+  return validatePasswordStrength(newPassword)
 }

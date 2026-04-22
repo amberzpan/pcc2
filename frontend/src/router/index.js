@@ -6,6 +6,9 @@ import PublishView from '../views/PublishView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import FavoritesView from '../views/FavoritesView.vue'
 import SearchView from '../views/SearchView.vue'
+import SettingsView from '../views/SettingsView.vue'
+import PostDetailView from '../views/PostDetailView.vue'
+import HelpView from '../views/HelpView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +55,22 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: SearchView
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/help',
+      name: 'help',
+      component: HelpView
+    },
+    {
+      path: '/post/:id',
+      name: 'post-detail',
+      component: PostDetailView
     }
   ]
 })

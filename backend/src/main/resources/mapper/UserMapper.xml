@@ -19,14 +19,21 @@
     </select>
     
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (username, password, nickname, avatar)
-        VALUES (#{username}, #{password}, #{nickname}, #{avatar})
+        INSERT INTO user (username, password, nickname, avatar, cover_url)
+        VALUES (#{username}, #{password}, #{nickname}, #{avatar}, #{coverUrl})
     </insert>
     
     <update id="update">
         UPDATE user
-        SET nickname = #{nickname}, avatar = #{avatar}, bio = #{bio}
+        SET nickname = #{nickname},
+            avatar = #{avatar},
+            cover_url = #{coverUrl},
+            bio = #{bio}
         WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE user SET password = #{password} WHERE id = #{id}
     </update>
     
     <update id="incrementFollowersCount">

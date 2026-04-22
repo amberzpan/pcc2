@@ -275,14 +275,16 @@ onMounted(() => {
 .search-page {
   display: grid;
   gap: 12px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .panel {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 14px;
-  box-shadow: 0 8px 24px rgba(66, 45, 17, 0.06);
 }
 
 .header h2 {
@@ -291,7 +293,7 @@ onMounted(() => {
 
 .header p {
   margin: 4px 0 0;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 
 .users-panel h3 {
@@ -303,14 +305,14 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-top: 1px dashed #e8dccd;
+  border-top: 1px solid var(--line);
   cursor: pointer;
   border-radius: 10px;
   transition: background-color 0.2s ease;
 }
 
 .user-row:hover {
-  background: #fff5ed;
+  background: var(--surface);
 }
 
 .user-row:first-of-type {
@@ -330,13 +332,13 @@ onMounted(() => {
 }
 
 .meta span {
-  color: #7a6d5a;
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
 .empty,
 .hint {
   text-align: center;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 </style>

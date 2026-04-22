@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -83,15 +84,19 @@ class PostServiceTest {
     }
 
     @Test
-    void getDiscoverPostsShouldPassCurrentUserIdToMapper() {
+    void getPostListShouldUseAllScoreOrderingFromMapper() {
         Post post = new Post();
-        post.setId(21L);
-        post.setUserId(6L);
-        when(postMapper.findDiscover(eq(3L), anyInt(), anyInt())).thenReturn(java.util.List.of(post));
+        post.setId(66L);
+        post.setUserId(3L);
+        post.setLikeCount(10);
+        post.setCommentCount(4);
+        post.setRepostCount(2);
+        post.setAllScore(8.6);
+        when(postMapper.findAll(anyInt(), anyInt())).thenReturn(java.util.List.of(post));
 
-        java.util.List<Post> result = postService.getDiscoverPosts(1, 10, 3L);
+        java.util.List<Post> result = postService.getPostList(1, 10, null);
 
         assertEquals(1, result.size());
-        org.mockito.Mockito.verify(postMapper).findDiscover(eq(3L), anyInt(), anyInt());
+        assertTrue(result.get(0).getAllScore() > 0);
     }
 }

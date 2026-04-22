@@ -44,4 +44,15 @@ public class LikeController {
         result.put("liked", liked);
         return Result.success(result);
     }
+
+    @GetMapping("/list")
+    public Result<?> getLikedPosts(@RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error(401, "未登录");
+        }
+        return Result.success(likeService.getLikedPosts(userId, page, size));
+    }
 }

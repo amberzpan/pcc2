@@ -19,9 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -31,6 +33,9 @@ class UserServiceTest {
 
     @Mock
     private FollowMapper followMapper;
+
+    @Mock
+    private UserSchemaCompatibilityService schemaCompatibilityService;
 
     @InjectMocks
     private UserService userService;
@@ -144,6 +149,7 @@ class UserServiceTest {
         assertNotNull(response);
         org.junit.jupiter.api.Assertions.assertEquals("new-name", response.getNickname());
         org.junit.jupiter.api.Assertions.assertEquals("new-bio", response.getBio());
+        verify(schemaCompatibilityService, atLeastOnce()).apply();
         verify(userMapper).update(any(User.class));
     }
 
@@ -179,5 +185,53 @@ class UserServiceTest {
 
         assertNotNull(response.getToken());
         assertFalse(response.getToken().contains("abc12345"));
+    }
+
+    @Test
+    void updateCurrentUserShouldRejectBlankNickname() {
+        User existing = new User();
+        existing.setId(3L);
+        existing.setUsername("u3");
+        existing.setNickname("old");
+
+        com.pcc2.social.dto.UserVO req = new com.pcc2.social.dto.UserVO();
+        req.setNickname("  ");
+
+        when(userMapper.findById(3L)).thenReturn(existing);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.updateCurrentUser(3L, req));
+
+        assertTrue(ex.getMessage().contains("昵称不能为空"));
+        verify(userMapper, never()).update(any(User.class));
+    }
+
+    @Test
+    void changePasswordShouldPersistEncodedPasswordWhenOldPasswordMatches() {
+        User existing = new User();
+        existing.setId(9L);
+        existing.setUsername("demo9");
+        existing.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("abc12345"));
+
+        when(userMapper.findById(9L)).thenReturn(existing);
+
+        userService.changePassword(9L, "abc12345", "new12345");
+
+        verify(userMapper).updatePassword(eq(9L), anyString());
+    }
+
+    @Test
+    void changePasswordShouldRejectOverlongPassword() {
+        User existing = new User();
+        existing.setId(10L);
+        existing.setUsername("demo10");
+        existing.setPassword(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("abc12345"));
+
+        when(userMapper.findById(10L)).thenReturn(existing);
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> userService.changePassword(10L, "abc12345", "ab12345678901234567890123X"));
+
+        assertTrue(ex.getMessage().contains("8-24"));
+        verify(userMapper, never()).updatePassword(eq(10L), anyString());
     }
 }

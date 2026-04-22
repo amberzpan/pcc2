@@ -29,8 +29,8 @@
     </div>
 
     <div class="panel switcher">
-      <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">全部动态</button>
-      <button :class="['switch-btn', mode === 'hot' ? 'active' : '']" @click="changeMode('hot')">热门帖</button>
+      <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">首页</button>
+      <button :class="['switch-btn', mode === 'hot' ? 'active' : '']" :disabled="!isLoggedIn" @click="changeMode('hot')">热门动态</button>
       <button
         :class="['switch-btn', mode === 'following' ? 'active' : '']"
         :disabled="!isLoggedIn"
@@ -39,7 +39,6 @@
       >
         关注动态
       </button>
-      <button :class="['switch-btn', mode === 'discover' ? 'active' : '']" @click="changeMode('discover')">发现动态</button>
     </div>
 
     <div class="panel mode-intro">
@@ -70,20 +69,19 @@
 
     <div class="panel empty" v-if="!loading && posts.length === 0">当前没有内容</div>
 
-    <div class="panel load-more" v-if="hasMore" @click="loadMore">加载更多</div>
+    <div ref="loadMoreRef" class="auto-load" aria-hidden="true"></div>
     <div class="panel hint" v-if="loading">加载中...</div>
   </section>
 </template>
 
 <script setup>
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   createComment,
   createPost,
   deleteComment as apiDeleteComment,
   deletePost,
-  getDiscoverPosts,
   getComments,
   getFollowingPosts,
   getHotPosts,
@@ -94,6 +92,7 @@ import {
   toggleLike
 } from '@/api'
 import PostCard from '@/components/PostCard.vue'
+import { shouldTriggerInfiniteLoad } from '@/utils/infinite-scroll'
 import { normalizeComments, normalizePostList } from '@/utils/post-utils'
 import { getFeedModeMeta, normalizeFeedMode, resolveAccessibleFeedMode } from '@/utils/home-mode'
 
@@ -109,6 +108,9 @@ const size = 10
 const hasMore = ref(false)
 const loading = ref(false)
 const mode = ref('all')
+const loadMoreRef = ref(null)
+let observer = null
+let latestRequestId = 0
 
 const currentUserId = computed(() => user.value?.id)
 const modeMeta = computed(() => getFeedModeMeta(mode.value, isLoggedIn.value))
@@ -135,16 +137,18 @@ const fetchPosts = async (reset = true) => {
   }
 
   loading.value = true
+  const requestId = ++latestRequestId
   try {
     let api = getPostList
     if (mode.value === 'following') {
       api = getFollowingPosts
     } else if (mode.value === 'hot') {
       api = getHotPosts
-    } else if (mode.value === 'discover') {
-      api = getDiscoverPosts
     }
     const res = await api(page.value, size)
+    if (requestId !== latestRequestId) {
+      return
+    }
     if (res.code !== 200 || !Array.isArray(res.data)) {
       posts.value = []
       hasMore.value = false
@@ -161,6 +165,9 @@ const fetchPosts = async (reset = true) => {
 }
 
 const loadMore = async () => {
+  if (!hasMore.value || loading.value) {
+    return
+  }
   page.value += 1
   await fetchPosts(false)
 }
@@ -346,9 +353,38 @@ watch(() => route.query.mode, (value) => {
 })
 
 watch(() => isLoggedIn.value, (loggedIn) => {
-  if (!loggedIn && mode.value === 'following') {
+  if (!loggedIn && mode.value !== 'all') {
     setMode('all')
     fetchPosts(true)
+  }
+})
+
+const setupInfiniteLoad = () => {
+  if (!loadMoreRef.value || observer) {
+    return
+  }
+  observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (shouldTriggerInfiniteLoad({
+        isIntersecting: entry.isIntersecting,
+        loading: loading.value,
+        hasMore: hasMore.value
+      })) {
+        loadMore()
+      }
+    }
+  }, { rootMargin: '300px 0px 200px 0px' })
+  observer.observe(loadMoreRef.value)
+}
+
+onMounted(() => {
+  setupInfiniteLoad()
+})
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
   }
 })
 </script>
@@ -357,14 +393,16 @@ watch(() => isLoggedIn.value, (loggedIn) => {
 .feed-page {
   display: grid;
   gap: 14px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .panel {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 14px;
-  box-shadow: 0 8px 24px rgba(66, 45, 17, 0.06);
 }
 
 .switcher {
@@ -377,11 +415,8 @@ watch(() => isLoggedIn.value, (loggedIn) => {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.95fr);
   gap: 14px;
-  border-color: #eecfb8;
-  background:
-    radial-gradient(circle at 14% 18%, #fff4e8 0, transparent 43%),
-    radial-gradient(circle at 90% 85%, #ffe4ce 0, transparent 45%),
-    #fffaf4;
+  border-color: var(--line);
+  background: var(--surface);
 }
 
 .hero-copy h1 {
@@ -396,12 +431,12 @@ watch(() => isLoggedIn.value, (loggedIn) => {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #a7421d;
+  color: var(--muted);
 }
 
 .hero-desc {
   margin: 10px 0 0;
-  color: #705f4c;
+  color: var(--muted);
   line-height: 1.6;
 }
 
@@ -417,18 +452,18 @@ watch(() => isLoggedIn.value, (loggedIn) => {
   border-radius: 999px;
   font-weight: 700;
   padding: 8px 13px;
-  border: 1px solid #e8c9b1;
+  border: 1px solid var(--line);
 }
 
 .hero-btn.solid {
-  color: #fff;
-  border-color: #f25a29;
-  background: #f25a29;
+  color: var(--paper);
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 .hero-btn.ghost {
-  color: #7a3b20;
-  background: #fff7ef;
+  color: var(--ink);
+  background: transparent;
 }
 
 .hero-highlights {
@@ -438,9 +473,9 @@ watch(() => isLoggedIn.value, (loggedIn) => {
 }
 
 .highlight-item {
-  border: 1px solid #ecd7c5;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fffdf9;
+  background: var(--paper);
   padding: 10px;
   display: grid;
   gap: 4px;
@@ -451,16 +486,17 @@ watch(() => isLoggedIn.value, (loggedIn) => {
 }
 
 .highlight-item span {
-  color: #786955;
+  color: var(--muted);
   line-height: 1.45;
   font-size: 0.86rem;
 }
 
 .switch-btn {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 14px;
-  background: #fff;
+  background: transparent;
+  color: var(--ink);
   cursor: pointer;
   font-weight: 700;
 }
@@ -471,9 +507,9 @@ watch(() => isLoggedIn.value, (loggedIn) => {
 }
 
 .switch-btn.active {
-  background: #f25a29;
-  border-color: #f25a29;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
 }
 
 .mode-intro {
@@ -481,7 +517,7 @@ watch(() => isLoggedIn.value, (loggedIn) => {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  background: linear-gradient(125deg, #fff4ea 0%, #fffdf8 58%, #ffeedf 100%);
+  background: var(--surface);
 }
 
 .mode-intro h2 {
@@ -491,20 +527,20 @@ watch(() => isLoggedIn.value, (loggedIn) => {
 
 .mode-intro p {
   margin: 4px 0 0;
-  color: #7a6d5a;
+  color: var(--muted);
   line-height: 1.5;
 }
 
 .mode-badge {
   flex: 0 0 auto;
-  border: 1px solid #efcfb4;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 6px 10px;
-  background: #fff;
+  background: var(--paper);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.06em;
-  color: #a8431e;
+  color: var(--muted);
 }
 
 @media (max-width: 860px) {
@@ -513,15 +549,14 @@ watch(() => isLoggedIn.value, (loggedIn) => {
   }
 }
 
-.load-more {
-  text-align: center;
-  cursor: pointer;
-  font-weight: 700;
+.auto-load {
+  width: 100%;
+  height: 1px;
 }
 
 .hint,
 .empty {
   text-align: center;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 </style>

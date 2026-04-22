@@ -1,6 +1,7 @@
 package com.pcc2.social.controller;
 
 import com.pcc2.social.common.Result;
+import com.pcc2.social.dto.ChangePasswordRequest;
 import com.pcc2.social.dto.LoginRequest;
 import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
@@ -74,9 +75,30 @@ public class UserController {
         if (userId == null) {
             return Result.error(401, "未登录");
         }
+        if (requestBody == null || isBlank(requestBody.getNickname())) {
+            return Result.error("昵称不能为空");
+        }
         try {
             UserVO updated = userService.updateCurrentUser(userId, requestBody);
             return Result.success(updated);
+        } catch (RuntimeException ex) {
+            return Result.error(ex.getMessage());
+        }
+    }
+
+    @PutMapping("/password")
+    public Result<?> changePassword(@RequestBody ChangePasswordRequest requestBody, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error(401, "未登录");
+        }
+        String validateMessage = userService.validatePasswordRequest(requestBody);
+        if (validateMessage != null) {
+            return Result.error(validateMessage);
+        }
+        try {
+            userService.changePassword(userId, requestBody.getOldPassword(), requestBody.getNewPassword());
+            return Result.success();
         } catch (RuntimeException ex) {
             return Result.error(ex.getMessage());
         }
@@ -114,8 +136,8 @@ public class UserController {
         if (password == null) {
             return "用户名和密码不能为空";
         }
-        if (password.length() < 8 || password.length() > 64) {
-            return "密码长度需在8到64个字符之间";
+        if (password.length() < 8 || password.length() > 24) {
+            return "密码长度需在8到24个字符之间";
         }
         boolean hasLetter = password.matches(".*[A-Za-z].*");
         boolean hasDigit = password.matches(".*\\d.*");

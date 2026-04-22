@@ -30,6 +30,9 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         if ("GET".equalsIgnoreCase(method)) {
+            if ("/api/post/hot".equals(uri) || "/api/post/following".equals(uri)) {
+                return false;
+            }
             return true;
         }
 

@@ -3,17 +3,18 @@
 ## Quick Start
 
 ```bash
-# Option 1: One-click (Windows)
-E:\vscode\code\pcc2\start_project.bat
-
-# Option 2: Manual
+# Recommended: PowerShell manual startup
 # Terminal 1 - Backend (port 9090)
-cd E:\vscode\code\pcc2\backend
+Set-Location E:\vscode\code\pcc2\backend
+$env:DB_PASSWORD = "hp197027"
 mvn spring-boot:run
 
 # Terminal 2 - Frontend (port 5173)
-cd E:\vscode\code\pcc2\frontend
+Set-Location E:\vscode\code\pcc2\frontend
 npm run dev
+
+# Optional: One-click (cmd)
+E:\vscode\code\pcc2\start_project.bat
 ```
 
 - **Backend**: http://localhost:9090
@@ -34,6 +35,7 @@ npm run dev
 |------|---------|
 | Build frontend | `npm run build` |
 | Run backend | `mvn spring-boot:run` |
+| Check DB connectivity | `mysql -h localhost -P 3306 -u root -php197027 -e "SELECT 1;"` |
 | Kill port 9090 | `netstat -ano \| findstr "9090"` then `taskkill /F /PID <id>` |
 
 ## Known Issues
@@ -46,4 +48,5 @@ npm run dev
 
 - MySQL `social_platform` on localhost:3306
 - Credentials in `backend/src/main/resources/application.yml`
+- Default local password: `hp197027`
 - Run `database.sql` to initialize tables

@@ -11,6 +11,7 @@ public interface UserMapper {
     java.util.List<User> searchByKeyword(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
     int insert(User user);
     int update(User user);
+    int updatePassword(@Param("id") Long id, @Param("password") String password);
     int incrementFollowersCount(Long id);
     int decrementFollowersCount(Long id);
     int incrementFollowingCount(Long id);

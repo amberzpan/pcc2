@@ -27,12 +27,12 @@
       @toggle-comment-like="toggleCommentLike"
     />
 
-    <article class="panel load-more" v-if="hasMore" @click="loadMore">加载更多</article>
+    <div ref="loadMoreRef" class="auto-load"></div>
   </section>
 </template>
 
 <script setup>
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   createComment,
   createPost,
@@ -46,6 +46,7 @@ import {
   toggleLike
 } from '@/api'
 import PostCard from '@/components/PostCard.vue'
+import { shouldTriggerInfiniteLoad } from '@/utils/infinite-scroll'
 import { normalizeComments, normalizePostList } from '@/utils/post-utils'
 
 const user = inject('user')
@@ -57,7 +58,10 @@ const page = ref(1)
 const size = 10
 const hasMore = ref(false)
 const loading = ref(false)
+const loadMoreRef = ref(null)
 const currentUserId = computed(() => user.value?.id)
+let observer = null
+let latestRequestId = 0
 
 const load = async (reset = true) => {
   if (reset) {
@@ -65,8 +69,12 @@ const load = async (reset = true) => {
     posts.value = []
   }
   loading.value = true
+  const requestId = ++latestRequestId
   try {
     const res = await getFavorites(page.value, size)
+    if (requestId !== latestRequestId) {
+      return
+    }
     if (res.code === 200 && Array.isArray(res.data)) {
       const data = normalizePostList(res.data).map((item) => ({ ...item, favorited: true }))
       posts.value = reset ? data : posts.value.concat(data)
@@ -83,6 +91,9 @@ const load = async (reset = true) => {
 }
 
 const loadMore = async () => {
+  if (!hasMore.value || loading.value) {
+    return
+  }
   page.value += 1
   await load(false)
 }
@@ -253,6 +264,27 @@ const toggleCommentLike = async ({ post, comment }) => {
 
 onMounted(() => {
   load(true)
+  if (loadMoreRef.value) {
+    observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (shouldTriggerInfiniteLoad({
+          isIntersecting: entry.isIntersecting,
+          loading: loading.value,
+          hasMore: hasMore.value
+        })) {
+          loadMore()
+        }
+      }
+    }, { rootMargin: '280px 0px 200px 0px' })
+    observer.observe(loadMoreRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
 })
 </script>
 
@@ -260,12 +292,15 @@ onMounted(() => {
 .favorites-page {
   display: grid;
   gap: 12px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .panel {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 14px;
 }
 
@@ -275,12 +310,11 @@ onMounted(() => {
 
 .heading p {
   margin: 4px 0 0;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 
-.load-more {
-  text-align: center;
-  font-weight: 700;
-  cursor: pointer;
+.auto-load {
+  width: 100%;
+  height: 1px;
 }
 </style>

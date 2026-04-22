@@ -12,31 +12,41 @@
         <button v-if="showFollow" class="head-follow" @click="$emit('toggle-follow', post)">
           {{ post.followed ? '已关注' : '关注' }}
         </button>
-        <button v-if="canDelete" class="icon-btn danger" @click="$emit('delete-post', post.id)">🗑</button>
+        <button v-if="canDelete" class="icon-btn danger" @click="$emit('delete-post', post.id)" title="删除动态">
+          <Trash2 :size="15" />
+        </button>
       </div>
     </header>
 
-    <p v-if="post.content" class="post-content">{{ post.content }}</p>
+    <p v-if="post.content" class="post-content allow-selection">{{ post.content }}</p>
     <img v-if="post.mediaUrl && post.mediaType === 'image'" class="media" :src="post.mediaUrl" alt="post media" />
     <video v-if="post.mediaUrl && post.mediaType === 'video'" class="media" controls :src="post.mediaUrl"></video>
 
-    <div v-if="post.originalContent" class="quote">转发原文：{{ post.originalContent }}</div>
+    <button v-if="post.repostId && post.originalContent" class="quote" @click="openOriginalPost">
+      <ArrowRightLeft :size="14" />
+      <span>转发原文：{{ post.originalContent }}</span>
+    </button>
 
     <footer class="post-actions">
       <button class="action" :class="post.liked ? 'active' : ''" @click="$emit('toggle-like', post)">
-        <span>👍</span>
+        <ThumbsUp :size="14" />
         <span>{{ post.likeCount || 0 }}</span>
       </button>
       <button class="action" @click="$emit('toggle-comments', post)">
-        <span>💬</span>
+        <MessageCircle :size="14" />
         <span>{{ post.commentCount || 0 }}</span>
       </button>
-      <button class="action" :class="post.favorited ? 'active' : ''" @click="$emit('toggle-favorite', post)">
-        <span>⭐</span>
-        <span>{{ post.favorited ? '已收藏' : '收藏' }}</span>
+      <button
+        class="action favorite-action"
+        :class="post.favorited ? 'active' : ''"
+        :title="post.favorited ? '已标记' : '标记'"
+        :aria-label="post.favorited ? '已标记' : '标记'"
+        @click="$emit('toggle-favorite', post)"
+      >
+        <Bookmark :size="14" />
       </button>
       <button class="action" @click="$emit('repost', post)">
-        <span>🔁</span>
+        <Repeat2 :size="14" />
         <span>{{ post.repostCount || 0 }}</span>
       </button>
     </footer>
@@ -58,9 +68,12 @@
             <strong>{{ comment.nickname || comment.username }}</strong>
             <span>{{ formatTime(comment.createdAt) }}</span>
             <button class="tiny-action" :class="comment.liked ? 'liked' : ''" @click="$emit('toggle-comment-like', { post, comment })">
-              👍 {{ comment.likeCount || 0 }}
+              <ThumbsUp :size="12" />
+              {{ comment.likeCount || 0 }}
             </button>
-            <button v-if="comment.userId === currentUserId" class="tiny-action danger" @click="$emit('delete-comment', { post, commentId: comment.id })">删除</button>
+            <button v-if="comment.userId === currentUserId" class="tiny-action danger" @click="$emit('delete-comment', { post, commentId: comment.id })">
+              删除
+            </button>
           </div>
           <p>{{ comment.content }}</p>
         </div>
@@ -75,6 +88,7 @@
 </template>
 
 <script setup>
+import { ArrowRightLeft, Bookmark, MessageCircle, Repeat2, ThumbsUp, Trash2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -106,7 +120,7 @@ defineEmits([
   'toggle-comment-like'
 ])
 
-const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect fill="%23f4e7d6" width="80" height="80"/><circle fill="%23d3b89d" cx="40" cy="30" r="12"/><rect fill="%23d3b89d" x="20" y="48" width="40" height="18" rx="9"/></svg>'
+const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect fill="%23d8dde6" width="80" height="80"/><circle fill="%239aa3b3" cx="40" cy="30" r="12"/><rect fill="%239aa3b3" x="20" y="48" width="40" height="18" rx="9"/></svg>'
 
 const canDelete = computed(() => props.currentUserId && props.post.userId === props.currentUserId)
 const showFollow = computed(() => props.currentUserId && props.post.userId !== props.currentUserId)
@@ -115,6 +129,13 @@ const router = useRouter()
 const openProfile = () => {
   if (!props.post.userId) return
   router.push(`/profile/${props.post.userId}`)
+}
+
+const openOriginalPost = () => {
+  if (!props.post.repostId) {
+    return
+  }
+  router.push(`/post/${props.post.repostId}`)
 }
 
 const formatTime = (time) => {
@@ -127,46 +148,39 @@ const formatTime = (time) => {
 
 <style scoped>
 .post-card {
-  border: 1px solid #e8ddcf;
-  border-radius: 20px;
-  background: #fffef9;
-  padding: 16px;
-  box-shadow: 0 18px 35px rgba(66, 45, 17, 0.06);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  padding: 14px;
+  box-shadow: 0 12px 22px color-mix(in srgb, var(--line) 35%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .post-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 24px 42px rgba(66, 45, 17, 0.1);
 }
 
 .post-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
 }
 
 .head-actions {
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 
 .head-follow {
-  border: 1px solid #efcfb6;
-  background: #fff4ec;
-  color: #b64622;
+  border: 1px solid var(--line);
+  background: transparent;
   border-radius: 999px;
   padding: 5px 10px;
+  color: var(--ink);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-}
-
-.head-follow:hover {
-  border-color: #e9bfa3;
-  background: #ffeadd;
 }
 
 .author {
@@ -176,22 +190,21 @@ const formatTime = (time) => {
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #f2e2cf;
 }
 
 .author h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.98rem;
 }
 
 .author p {
   margin: 2px 0 0;
-  color: #8b7a63;
-  font-size: 0.8rem;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .clickable {
@@ -199,38 +212,45 @@ const formatTime = (time) => {
 }
 
 .icon-btn {
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
+  color: var(--muted);
   cursor: pointer;
-  font-size: 1rem;
+  display: grid;
+  place-items: center;
 }
 
 .icon-btn.danger {
-  color: #ca3434;
+  color: var(--error);
 }
 
 .post-content {
-  margin: 12px 0;
+  margin: 12px 0 0;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
 .media {
   width: 100%;
-  border-radius: 14px;
-  margin-top: 6px;
+  border-radius: 12px;
+  margin-top: 10px;
   max-height: 460px;
   object-fit: cover;
 }
 
 .quote {
   margin-top: 10px;
-  font-size: 0.9rem;
-  color: #7a6d5a;
-  background: linear-gradient(90deg, #fff1e5 0, #fffaf5 100%);
-  border: 1px solid #f3dcc7;
+  width: 100%;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--line);
   border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
   padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
 }
 
 .post-actions {
@@ -241,32 +261,27 @@ const formatTime = (time) => {
 }
 
 .action {
-  border: 1px solid #eadfce;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: transparent;
   border-radius: 999px;
-  padding: 6px 11px;
-  cursor: pointer;
-  font-weight: 700;
-  color: #4f3f2c;
+  padding: 6px 10px;
+  color: var(--ink);
   display: inline-flex;
-  align-items: center;
   gap: 6px;
-}
-
-.action:hover {
-  border-color: #dfc4ad;
-  background: #fff8f1;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .action.active {
-  background: #f25a29;
-  border-color: #f25a29;
-  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
 }
 
 .comments {
   margin-top: 12px;
-  border-top: 1px dashed #e9dccb;
+  border-top: 1px solid var(--line);
   padding-top: 12px;
 }
 
@@ -276,47 +291,49 @@ const formatTime = (time) => {
 }
 
 .comment-toolbar select {
-  border: 1px solid #eadfce;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 6px;
-  background: #fff;
+  background: transparent;
+  color: var(--ink);
 }
 
 .comment-item {
   padding: 10px 0;
-  border-bottom: 1px dashed #f0e6db;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
 }
 
 .comment-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.84rem;
-  color: #7a6d5a;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .comment-meta strong {
-  color: #2d2418;
+  color: var(--ink);
 }
 
 .tiny-action {
-  border: 1px solid #ebdece;
-  background: #fff;
-  color: #5f4e3a;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
   border-radius: 999px;
-  font-size: 0.78rem;
-  padding: 2px 8px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 0.76rem;
+  padding: 2px 7px;
   cursor: pointer;
 }
 
 .tiny-action.liked {
-  border-color: #f25a29;
-  color: #f25a29;
+  color: var(--ink);
 }
 
 .tiny-action.danger {
-  border-color: #f3c9c9;
-  color: #cc2a2a;
+  color: var(--error);
 }
 
 .comment-editor {
@@ -327,22 +344,25 @@ const formatTime = (time) => {
 }
 
 .comment-editor input {
-  border: 1px solid #eadfce;
+  border: 1px solid var(--line);
   border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
   padding: 8px 10px;
+  font: inherit;
 }
 
 .comment-editor button {
-  border: 0;
+  border: 1px solid var(--accent);
   border-radius: 10px;
-  background: #f25a29;
-  color: #fff;
+  background: var(--accent);
+  color: var(--paper);
   font-weight: 700;
   padding: 0 12px;
 }
 
 .hint {
   text-align: center;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 </style>

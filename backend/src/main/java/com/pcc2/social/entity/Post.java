@@ -13,6 +13,8 @@ public class Post {
     private Integer likeCount;
     private Integer commentCount;
     private Integer repostCount;
+    private Double allScore;
+    private Double hotScore;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -101,6 +103,22 @@ public class Post {
 
     public void setRepostCount(Integer repostCount) {
         this.repostCount = repostCount;
+    }
+
+    public Double getAllScore() {
+        return allScore;
+    }
+
+    public void setAllScore(Double allScore) {
+        this.allScore = allScore;
+    }
+
+    public Double getHotScore() {
+        return hotScore;
+    }
+
+    public void setHotScore(Double hotScore) {
+        this.hotScore = hotScore;
     }
 
     public LocalDateTime getCreatedAt() {

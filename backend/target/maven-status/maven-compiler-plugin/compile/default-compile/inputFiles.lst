@@ -17,6 +17,7 @@ E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\UserMapper.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\LoginRequest.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\UserVO.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\FavoriteMapper.java
+E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\UserSchemaCompatibilityService.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\CommentService.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\controller\PostController.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\FollowService.java
@@ -25,6 +26,7 @@ E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\RegisterRequest.ja
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\controller\UserController.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\config\SecurityConfig.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\config\WebConfig.java
+E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\config\StartupSchemaSync.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\Favorite.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\CommentMapper.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\controller\TestController.java
@@ -32,6 +34,7 @@ E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\controller\FavoriteCon
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\LikeService.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\PostService.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\service\FavoriteService.java
+E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\ChangePasswordRequest.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\PostRequest.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\PostMapper.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\mapper\FollowMapper.java

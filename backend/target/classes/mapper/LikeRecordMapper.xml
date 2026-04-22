@@ -18,4 +18,14 @@
     <select id="countByPostId" resultType="int">
         SELECT COUNT(*) FROM like_record WHERE post_id = #{postId}
     </select>
+
+    <select id="findLikedPosts" resultType="com.pcc2.social.entity.Post">
+        SELECT p.*, u.username, u.nickname, u.avatar
+        FROM like_record lr
+        INNER JOIN post p ON lr.post_id = p.id
+        INNER JOIN user u ON p.user_id = u.id
+        WHERE lr.user_id = #{userId}
+        ORDER BY lr.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
 </mapper>

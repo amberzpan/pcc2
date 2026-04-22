@@ -1,5 +1,6 @@
 package com.pcc2.social.service;
 
+import com.pcc2.social.dto.ChangePasswordRequest;
 import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.dto.UserVO;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class UserService {
     private final UserMapper userMapper;
     private final FollowMapper followMapper;
+    private final UserSchemaCompatibilityService schemaCompatibilityService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Value("${jwt.secret}")
@@ -29,9 +31,12 @@ public class UserService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
     
-    public UserService(UserMapper userMapper, FollowMapper followMapper) {
+    public UserService(UserMapper userMapper,
+                       FollowMapper followMapper,
+                       UserSchemaCompatibilityService schemaCompatibilityService) {
         this.userMapper = userMapper;
         this.followMapper = followMapper;
+        this.schemaCompatibilityService = schemaCompatibilityService;
     }
     
     public LoginResponse register(RegisterRequest request) {
@@ -102,22 +107,47 @@ public class UserService {
     }
 
     public UserVO updateCurrentUser(Long userId, UserVO updateRequest) {
+        schemaCompatibilityService.apply();
         User user = userMapper.findById(userId);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
 
-        if (!isBlank(updateRequest.getNickname())) {
-            user.setNickname(updateRequest.getNickname().trim());
+        String nickname = updateRequest == null ? null : updateRequest.getNickname();
+        if (isBlank(nickname)) {
+            throw new RuntimeException("昵称不能为空");
         }
-        if (updateRequest.getAvatar() != null) {
-            user.setAvatar(updateRequest.getAvatar().trim());
-        }
-        if (updateRequest.getBio() != null) {
-            user.setBio(updateRequest.getBio().trim());
+        user.setNickname(nickname.trim());
+        if (updateRequest != null) {
+            if (updateRequest.getAvatar() != null) {
+                user.setAvatar(updateRequest.getAvatar().trim());
+            }
+            if (updateRequest.getCoverUrl() != null) {
+                user.setCoverUrl(updateRequest.getCoverUrl().trim());
+            }
+            if (updateRequest.getBio() != null) {
+                user.setBio(updateRequest.getBio().trim());
+            }
         }
         userMapper.update(user);
         return toUserVO(userMapper.findById(userId));
+    }
+
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        if (isBlank(oldPassword) || isBlank(newPassword)) {
+            throw new RuntimeException("密码不能为空");
+        }
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("旧密码错误");
+        }
+        if (!isValidPassword(newPassword)) {
+            throw new RuntimeException("新密码需为8-24位且包含字母和数字");
+        }
+        userMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
     }
 
     public List<User> searchUsers(String keyword, int page, int size) {
@@ -137,9 +167,11 @@ public class UserService {
         vo.setUsername(user.getUsername());
         vo.setNickname(user.getNickname());
         vo.setAvatar(user.getAvatar());
+        vo.setCoverUrl(user.getCoverUrl());
         vo.setBio(user.getBio());
         vo.setFollowersCount(user.getFollowersCount() == null ? 0 : user.getFollowersCount());
         vo.setFollowingCount(user.getFollowingCount() == null ? 0 : user.getFollowingCount());
+        vo.setCreatedAt(user.getCreatedAt());
         return vo;
     }
     
@@ -166,8 +198,8 @@ public class UserService {
         if (username.length() < 3 || username.length() > 20) {
             throw new RuntimeException("用户名长度需在3到20个字符之间");
         }
-        if (password.length() < 8 || password.length() > 64) {
-            throw new RuntimeException("密码长度需在8到64个字符之间");
+        if (password.length() < 8 || password.length() > 24) {
+            throw new RuntimeException("密码长度需在8到24个字符之间");
         }
         if (!password.matches(".*[A-Za-z].*") || !password.matches(".*\\d.*")) {
             throw new RuntimeException("密码需同时包含字母和数字");
@@ -176,6 +208,29 @@ public class UserService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    public String validatePasswordRequest(ChangePasswordRequest request) {
+        if (request == null) {
+            return "请求不能为空";
+        }
+        if (isBlank(request.getOldPassword()) || isBlank(request.getNewPassword()) || isBlank(request.getConfirmPassword())) {
+            return "密码不能为空";
+        }
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return "两次输入的新密码不一致";
+        }
+        if (!isValidPassword(request.getNewPassword())) {
+            return "新密码需为8-24位且包含字母和数字";
+        }
+        return null;
+    }
+
+    private boolean isValidPassword(String password) {
+        if (password == null || password.length() < 8 || password.length() > 24) {
+            return false;
+        }
+        return password.matches(".*[A-Za-z].*") && password.matches(".*\\d.*");
     }
     
     public Long getUserIdFromToken(String token) {

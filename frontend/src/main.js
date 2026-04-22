@@ -1,6 +1,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import { applyTheme, getStoredTheme } from './utils/theme'
+
+applyTheme(getStoredTheme())
 
 const app = createApp(App)
 app.use(router)

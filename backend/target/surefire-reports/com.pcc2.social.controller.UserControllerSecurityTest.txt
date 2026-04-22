@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.pcc2.social.controller.UserControllerSecurityTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.944 s -- in com.pcc2.social.controller.UserControllerSecurityTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.pcc2.social.controller.UserControllerSecurityTest

@@ -82,12 +82,12 @@ const submit = async () => {
 }
 
 .card {
-  width: min(560px, 100%);
-  border: 1px solid #e7dccf;
+  width: min(760px, 100%);
+  border: 1px solid var(--line);
   border-radius: 18px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 24px;
-  box-shadow: 0 18px 40px rgba(66, 45, 17, 0.1);
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--line) 35%, transparent);
 }
 
 .auth-form {
@@ -100,7 +100,7 @@ h2 {
 }
 
 .tip {
-  color: #7a6d5a;
+  color: var(--muted);
 }
 
 label {
@@ -112,10 +112,12 @@ label {
 
 input {
   width: 100%;
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px 10px;
   font: inherit;
+  background: transparent;
+  color: var(--ink);
 }
 
 .btn {
@@ -124,8 +126,8 @@ input {
   border: 0;
   border-radius: 999px;
   padding: 10px;
-  background: #f25a29;
-  color: #fff;
+  background: var(--accent);
+  color: var(--paper);
   font-weight: 700;
   cursor: pointer;
 }

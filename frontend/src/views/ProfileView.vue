@@ -1,14 +1,29 @@
 <template>
   <section class="profile-page" v-if="viewUser">
     <article class="panel hero">
-      <div class="cover"></div>
+      <div class="cover clickable-media" @click="onCoverClick">
+        <img v-if="viewUser.coverUrl" :src="viewUser.coverUrl" alt="cover" />
+        <div v-else class="cover-placeholder">暂无背景图</div>
+        <button v-if="isSelf" class="camera-btn cover-camera-btn" type="button" title="更换背景图" @click.stop="triggerCoverUpload">
+          <Camera :size="14" />
+        </button>
+      </div>
+
       <div class="profile-main">
-        <img class="avatar" :src="viewUser.avatar || defaultAvatar" alt="avatar" />
+        <div class="avatar-wrap clickable-media" @click="onAvatarClick">
+          <img class="avatar" :src="viewUser.avatar || defaultAvatar" alt="avatar" />
+          <button v-if="isSelf" class="camera-btn avatar-camera-btn" type="button" title="更换头像" @click.stop="triggerAvatarUpload">
+            <Camera :size="14" />
+          </button>
+        </div>
+
         <div class="identity">
           <h2>{{ viewUser.nickname || viewUser.username }}</h2>
           <p>@{{ viewUser.username }}</p>
           <small>{{ viewUser.bio || '这个人很神秘，还没有留下简介。' }}</small>
+          <small class="meta-line">注册于 {{ formatDate(viewUser.createdAt) }}</small>
         </div>
+
         <div class="hero-actions">
           <button v-if="isSelf" class="action-btn" @click="editing = !editing">
             {{ editing ? '收起编辑' : '编辑资料' }}
@@ -18,6 +33,7 @@
           </button>
         </div>
       </div>
+
       <div class="stats-row">
         <button class="stat" @click="openRelation('following')">
           <strong>{{ viewUser.followingCount || 0 }}</strong>
@@ -28,6 +44,9 @@
           <span>粉丝</span>
         </button>
       </div>
+
+      <input ref="avatarFileInput" class="hidden-input" type="file" accept="image/*" @change="onAvatarUpload" />
+      <input ref="coverFileInput" class="hidden-input" type="file" accept="image/*" @change="onCoverUpload" />
     </article>
 
     <article class="panel edit-panel" v-if="isSelf && editing">
@@ -35,11 +54,7 @@
       <div class="grid">
         <label>
           昵称
-          <input v-model="form.nickname" placeholder="请输入昵称" />
-        </label>
-        <label>
-          头像 URL
-          <input v-model="form.avatar" placeholder="可填写图片链接" />
+          <input v-model="form.nickname" placeholder="请输入昵称" required />
         </label>
       </div>
       <label class="bio-label">
@@ -52,6 +67,12 @@
     <article class="panel timeline">
       <div class="timeline-head">
         <h3>{{ isSelf ? '我的动态' : 'Ta 的动态' }}</h3>
+      </div>
+
+      <div class="tabs" v-if="isSelf">
+        <button class="tab-btn" :class="{ active: activeTab === 'posts' }" data-tab="posts" @click="switchTab('posts')">动态</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'liked' }" data-tab="liked" @click="switchTab('liked')">喜欢</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'favorites' }" data-tab="favorites" @click="switchTab('favorites')">收藏</button>
       </div>
 
       <div v-if="postsLoading" class="hint">加载中...</div>
@@ -76,7 +97,7 @@
         @toggle-comment-like="toggleCommentLike"
       />
 
-      <button class="load-more" v-if="postsHasMore" @click="loadMorePosts">加载更多</button>
+      <div ref="loadMoreRef" class="auto-load"></div>
     </article>
 
     <div class="overlay" v-if="relation.show" @click.self="closeRelation">
@@ -95,8 +116,18 @@
               <p>@{{ item.username }}</p>
             </div>
           </button>
-          <button class="load-more" v-if="relation.hasMore" @click="loadRelation(false)">加载更多</button>
+          <div v-if="relation.hasMore" ref="relationLoadMoreRef" class="auto-load relation-auto-load" aria-hidden="true"></div>
         </div>
+      </article>
+    </div>
+
+    <div class="overlay image-preview-overlay" v-if="imagePreview.show" @click.self="closeImagePreview">
+      <article class="image-preview-card">
+        <header>
+          <h3>{{ imagePreview.title }}</h3>
+          <button class="close-btn" @click="closeImagePreview">关闭</button>
+        </header>
+        <img :src="imagePreview.url" :alt="imagePreview.title" />
       </article>
     </div>
   </section>
@@ -106,7 +137,8 @@
 </template>
 
 <script setup>
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { Camera } from 'lucide-vue-next'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   createComment,
@@ -114,17 +146,21 @@ import {
   deleteComment as apiDeleteComment,
   deletePost,
   getComments,
+  getFavorites,
   getFollowers,
   getFollowing,
+  getLikedPosts,
   getUserPosts,
   getUserProfile,
   toggleCommentLike as apiToggleCommentLike,
   toggleFavorite,
   toggleFollow,
   toggleLike,
-  updateUserInfo
+  updateUserInfo,
+  uploadImage
 } from '@/api'
 import PostCard from '@/components/PostCard.vue'
+import { shouldTriggerInfiniteLoad } from '@/utils/infinite-scroll'
 import { normalizeComments, normalizePostList } from '@/utils/post-utils'
 
 const route = useRoute()
@@ -139,8 +175,12 @@ const viewUser = ref(null)
 const editing = ref(false)
 const form = ref({
   nickname: '',
-  avatar: '',
   bio: ''
+})
+const imagePreview = ref({
+  show: false,
+  url: '',
+  title: ''
 })
 
 const posts = ref([])
@@ -148,6 +188,14 @@ const postsPage = ref(1)
 const postsSize = 10
 const postsLoading = ref(false)
 const postsHasMore = ref(false)
+const activeTab = ref('posts')
+const loadMoreRef = ref(null)
+const relationLoadMoreRef = ref(null)
+const avatarFileInput = ref(null)
+const coverFileInput = ref(null)
+let observer = null
+let relationObserver = null
+let latestPostRequestId = 0
 
 const relation = ref({
   show: false,
@@ -159,7 +207,7 @@ const relation = ref({
   items: []
 })
 
-const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90"><rect fill="%23ead8c3" width="90" height="90"/><circle fill="%23c9ab8c" cx="45" cy="33" r="14"/><rect fill="%23c9ab8c" x="24" y="54" width="42" height="20" rx="10"/></svg>'
+const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90"><rect fill="%23d8dde6" width="90" height="90"/><circle fill="%239aa3b3" cx="45" cy="33" r="14"/><rect fill="%239aa3b3" x="24" y="54" width="42" height="20" rx="10"/></svg>'
 
 const currentUserId = computed(() => user.value?.id || null)
 const hasResolvedProfile = ref(false)
@@ -176,7 +224,6 @@ const isSelf = computed(() => currentUserId.value && viewUser.value && currentUs
 const syncForm = () => {
   if (!viewUser.value) return
   form.value.nickname = viewUser.value.nickname || ''
-  form.value.avatar = viewUser.value.avatar || ''
   form.value.bio = viewUser.value.bio || ''
 }
 
@@ -222,8 +269,19 @@ const fetchPosts = async (reset = true) => {
   }
 
   postsLoading.value = true
+  const requestId = ++latestPostRequestId
   try {
-    const res = await getUserPosts(viewUser.value.id, postsPage.value, postsSize)
+    let res
+    if (activeTab.value === 'posts') {
+      res = await getUserPosts(viewUser.value.id, postsPage.value, postsSize)
+    } else if (activeTab.value === 'favorites') {
+      res = await getFavorites(postsPage.value, postsSize)
+    } else {
+      res = await getLikedPosts(postsPage.value, postsSize)
+    }
+    if (requestId !== latestPostRequestId) {
+      return
+    }
     const next = res.code === 200 ? normalizePostList(res.data) : []
     posts.value = reset ? next : posts.value.concat(next)
     postsHasMore.value = next.length === postsSize
@@ -235,29 +293,155 @@ const fetchPosts = async (reset = true) => {
 }
 
 const loadMorePosts = async () => {
+  if (!postsHasMore.value || postsLoading.value) {
+    return
+  }
   postsPage.value += 1
   await fetchPosts(false)
 }
 
+const switchTab = async (tab) => {
+  if (activeTab.value === tab) {
+    return
+  }
+  activeTab.value = tab
+  await fetchPosts(true)
+}
+
 const saveProfile = async () => {
   if (!isSelf.value) return
+  if (!form.value.nickname.trim()) {
+    showToast('昵称不能为空', 'error')
+    return
+  }
   try {
     const payload = {
       nickname: form.value.nickname.trim(),
-      avatar: form.value.avatar.trim(),
       bio: form.value.bio.trim()
     }
     const res = await updateUserInfo(payload)
     if (res.code === 200) {
       showToast('资料已更新')
       editing.value = false
+      viewUser.value = {
+        ...viewUser.value,
+        ...res.data,
+        followed: viewUser.value.followed,
+        followersCount: viewUser.value.followersCount,
+        followingCount: viewUser.value.followingCount
+      }
+      syncForm()
       await reloadUser()
-      await loadProfile()
     } else {
       showToast(res.message || '更新失败', 'error')
     }
   } catch {
     showToast('更新失败', 'error')
+  }
+}
+
+const triggerAvatarUpload = () => {
+  if (isSelf.value && avatarFileInput.value) {
+    avatarFileInput.value.click()
+  }
+}
+
+const triggerCoverUpload = () => {
+  if (isSelf.value && coverFileInput.value) {
+    coverFileInput.value.click()
+  }
+}
+
+const openImagePreview = (url, title) => {
+  if (!url) {
+    return
+  }
+  imagePreview.value = {
+    show: true,
+    url,
+    title
+  }
+}
+
+const closeImagePreview = () => {
+  imagePreview.value = {
+    show: false,
+    url: '',
+    title: ''
+  }
+}
+
+const onAvatarClick = () => {
+  openImagePreview(viewUser.value?.avatar || '', '头像预览')
+}
+
+const onCoverClick = () => {
+  openImagePreview(viewUser.value?.coverUrl || '', '背景图预览')
+}
+
+const onAvatarUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    const res = await uploadImage(file)
+    if (res.code !== 200 || !res.data?.url) {
+      showToast('头像上传失败', 'error')
+      return
+    }
+    const updateRes = await updateUserInfo({
+      nickname: viewUser.value.nickname || viewUser.value.username,
+      bio: viewUser.value.bio || '',
+      avatar: res.data.url
+    })
+    if (updateRes.code === 200 && updateRes.data) {
+      viewUser.value = {
+        ...viewUser.value,
+        ...updateRes.data,
+        followed: viewUser.value.followed,
+        followersCount: viewUser.value.followersCount,
+        followingCount: viewUser.value.followingCount
+      }
+      syncForm()
+      await reloadUser()
+      showToast('头像已更新')
+      return
+    }
+    showToast('头像上传失败', 'error')
+  } catch {
+    showToast('头像上传失败', 'error')
+  }
+}
+
+const onCoverUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    const res = await uploadImage(file)
+    if (res.code !== 200 || !res.data?.url) {
+      showToast('背景图上传失败', 'error')
+      return
+    }
+    const updateRes = await updateUserInfo({
+      nickname: viewUser.value.nickname || viewUser.value.username,
+      bio: viewUser.value.bio || '',
+      coverUrl: res.data.url
+    })
+    if (updateRes.code === 200 && updateRes.data) {
+      viewUser.value = {
+        ...viewUser.value,
+        ...updateRes.data,
+        followed: viewUser.value.followed,
+        followersCount: viewUser.value.followersCount,
+        followingCount: viewUser.value.followingCount
+      }
+      syncForm()
+      await reloadUser()
+      showToast('背景图已更新')
+      return
+    }
+    showToast('背景图上传失败', 'error')
+  } catch {
+    showToast('背景图上传失败', 'error')
   }
 }
 
@@ -465,10 +649,18 @@ const openRelation = async (type) => {
   relation.value.items = []
   relation.value.hasMore = false
   await loadRelation(true)
+  await nextTick()
+  setupRelationInfiniteLoad()
 }
 
 const loadRelation = async (reset = false) => {
   if (!viewUser.value?.id) {
+    return
+  }
+  if (relation.value.loading) {
+    return
+  }
+  if (!reset && !relation.value.hasMore) {
     return
   }
   if (reset) {
@@ -484,6 +676,8 @@ const loadRelation = async (reset = false) => {
     relation.value.items = reset ? list : relation.value.items.concat(list)
     relation.value.hasMore = list.length === relation.value.size
     relation.value.page = requestPage + 1
+    await nextTick()
+    setupRelationInfiniteLoad()
   } catch {
     showToast('加载列表失败', 'error')
   } finally {
@@ -493,11 +687,50 @@ const loadRelation = async (reset = false) => {
 
 const closeRelation = () => {
   relation.value.show = false
+  teardownRelationInfiniteLoad()
+}
+
+const setupRelationInfiniteLoad = () => {
+  if (!relation.value.show || !relationLoadMoreRef.value) {
+    teardownRelationInfiniteLoad()
+    return
+  }
+  teardownRelationInfiniteLoad()
+  relationObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (shouldTriggerInfiniteLoad({
+        isIntersecting: entry.isIntersecting,
+        loading: relation.value.loading,
+        hasMore: relation.value.hasMore
+      })) {
+        loadRelation(false)
+      }
+    }
+  }, { rootMargin: '220px 0px 140px 0px' })
+  relationObserver.observe(relationLoadMoreRef.value)
+}
+
+const teardownRelationInfiniteLoad = () => {
+  if (relationObserver) {
+    relationObserver.disconnect()
+    relationObserver = null
+  }
 }
 
 const jumpToUser = (id) => {
   closeRelation()
   router.push(`/profile/${id}`)
+}
+
+const formatDate = (value) => {
+  if (!value) {
+    return '未知'
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return '未知'
+  }
+  return date.toLocaleDateString('zh-CN')
 }
 
 const initialize = async () => {
@@ -510,7 +743,18 @@ const initialize = async () => {
 watch(() => route.params.id, async () => {
   editing.value = false
   relation.value.show = false
+  teardownRelationInfiniteLoad()
+  activeTab.value = 'posts'
   await initialize()
+})
+
+watch(() => relation.value.show, async (visible) => {
+  if (!visible) {
+    teardownRelationInfiniteLoad()
+    return
+  }
+  await nextTick()
+  setupRelationInfiniteLoad()
 })
 
 watch(() => currentUserId.value, async () => {
@@ -521,6 +765,28 @@ watch(() => currentUserId.value, async () => {
 
 onMounted(async () => {
   await initialize()
+  if (loadMoreRef.value) {
+    observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (shouldTriggerInfiniteLoad({
+          isIntersecting: entry.isIntersecting,
+          loading: postsLoading.value,
+          hasMore: postsHasMore.value
+        })) {
+          loadMorePosts()
+        }
+      }
+    }, { rootMargin: '300px 0px 200px 0px' })
+    observer.observe(loadMoreRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+  teardownRelationInfiniteLoad()
 })
 </script>
 
@@ -528,14 +794,16 @@ onMounted(async () => {
 .profile-page {
   display: grid;
   gap: 14px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .panel {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 18px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 14px;
-  box-shadow: 0 12px 30px rgba(66, 45, 17, 0.06);
 }
 
 .hero {
@@ -544,11 +812,29 @@ onMounted(async () => {
 }
 
 .cover {
-  height: 96px;
-  background:
-    radial-gradient(circle at 20% 25%, rgba(242, 90, 41, 0.45), transparent 35%),
-    radial-gradient(circle at 80% 60%, rgba(240, 179, 87, 0.4), transparent 40%),
-    linear-gradient(135deg, #f8e8cf, #f4d8b8);
+  height: 120px;
+  width: 100%;
+  background: var(--surface);
+  overflow: hidden;
+  position: relative;
+}
+
+.clickable-media {
+  cursor: zoom-in;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .profile-main {
@@ -556,8 +842,13 @@ onMounted(async () => {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 14px;
-  margin-top: -26px;
+  margin-top: -32px;
   padding: 0 14px 10px;
+}
+
+.avatar-wrap {
+  position: relative;
+  width: fit-content;
 }
 
 .avatar {
@@ -565,23 +856,26 @@ onMounted(async () => {
   height: 92px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #fffdf8;
-  box-shadow: 0 10px 24px rgba(37, 25, 13, 0.15);
+  border: 4px solid var(--paper);
 }
 
 .identity h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.36rem;
 }
 
 .identity p {
   margin: 4px 0;
-  color: #7a6d5a;
+  color: var(--muted);
 }
 
 .identity small {
-  color: #5f4d38;
+  color: var(--muted);
   display: block;
+}
+
+.meta-line {
+  margin-top: 2px;
 }
 
 .hero-actions {
@@ -591,8 +885,9 @@ onMounted(async () => {
 }
 
 .action-btn {
-  border: 1px solid #e7dccf;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
   border-radius: 999px;
   padding: 8px 14px;
   cursor: pointer;
@@ -600,9 +895,9 @@ onMounted(async () => {
 }
 
 .action-btn.primary {
-  background: #f25a29;
-  border-color: #f25a29;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
 }
 
 .stats-row {
@@ -612,23 +907,24 @@ onMounted(async () => {
 }
 
 .stat {
-  border: 1px solid #ebdecf;
-  border-radius: 12px;
-  background: #fff;
-  min-width: 120px;
-  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  min-width: 90px;
+  padding: 7px 10px;
   cursor: pointer;
-  display: grid;
-  text-align: left;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .stat strong {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
 }
 
 .stat span {
-  color: #7a6d5a;
-  font-size: 0.85rem;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .timeline {
@@ -640,25 +936,48 @@ onMounted(async () => {
   margin: 0;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
 label {
   display: grid;
   gap: 6px;
-  color: #5f4d38;
+  color: var(--muted);
   font-weight: 700;
 }
 
 input,
 textarea {
-  border: 1px solid #eadfcf;
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px 10px;
   font: inherit;
+  background: transparent;
+  color: var(--ink);
 }
 
 .bio-label {
@@ -667,28 +986,52 @@ textarea {
 
 .save-btn {
   margin-top: 10px;
-  border: 0;
+  border: 1px solid var(--accent);
   border-radius: 10px;
-  background: #f25a29;
-  color: #fff;
+  background: var(--accent);
+  color: var(--paper);
   font-weight: 700;
   padding: 9px 14px;
 }
 
-.load-more {
-  border: 1px solid #ebdecf;
+.auto-load {
+  width: 100%;
+  height: 1px;
+}
+
+.relation-auto-load {
+  margin-top: 4px;
+}
+
+.camera-btn {
+  position: absolute;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fff;
-  color: #4f3f2c;
-  font-weight: 700;
-  padding: 8px 12px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink);
   cursor: pointer;
+}
+
+.cover-camera-btn {
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+}
+
+.avatar-camera-btn {
+  right: 2px;
+  bottom: 2px;
+  z-index: 2;
 }
 
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(34, 25, 18, 0.4);
+  background: rgba(17, 24, 39, 0.4);
   display: grid;
   place-items: center;
   z-index: 40;
@@ -698,6 +1041,40 @@ textarea {
   width: min(560px, calc(100vw - 24px));
   max-height: 75vh;
   overflow: auto;
+}
+
+.image-preview-overlay {
+  z-index: 50;
+}
+
+.image-preview-card {
+  width: min(900px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.image-preview-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-preview-card h3 {
+  margin: 0;
+}
+
+.image-preview-card img {
+  width: 100%;
+  max-height: calc(100vh - 110px);
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--surface);
 }
 
 .relation-modal header {
@@ -713,9 +1090,10 @@ textarea {
 }
 
 .close-btn {
-  border: 1px solid #eadfcf;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fff;
+  background: transparent;
+  color: var(--ink);
   padding: 6px 10px;
   cursor: pointer;
 }
@@ -726,9 +1104,9 @@ textarea {
 }
 
 .relation-user {
-  border: 1px solid #eadfcf;
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fff;
+  background: transparent;
   width: 100%;
   padding: 8px;
   display: flex;
@@ -747,13 +1125,17 @@ textarea {
 
 .relation-user p {
   margin: 3px 0 0;
-  color: #7a6d5a;
+  color: var(--muted);
   font-size: 0.84rem;
 }
 
 .hint {
   text-align: center;
-  color: #7a6d5a;
+  color: var(--muted);
+}
+
+.hidden-input {
+  display: none;
 }
 
 @media (max-width: 840px) {
@@ -775,8 +1157,8 @@ textarea {
     justify-content: center;
   }
 
-  .grid {
-    grid-template-columns: 1fr;
+  .stats-row {
+    flex-wrap: wrap;
   }
 }
 </style>

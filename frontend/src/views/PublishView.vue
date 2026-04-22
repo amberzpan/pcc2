@@ -2,13 +2,34 @@
   <section class="publish-page">
     <article class="panel">
       <h2>发布动态</h2>
-      <textarea v-model="content" rows="6" placeholder="分享你的想法..." />
+      <textarea ref="editorRef" v-model="content" rows="6" placeholder="分享你的想法..." />
 
-      <div class="upload-row">
-        <label class="upload">
-          添加媒体（图片/视频）
+      <div class="toolbar-row">
+        <button class="toolbar-btn" type="button" :class="showStickers ? 'active' : ''" title="插入表情" @click="showStickers = !showStickers">
+          <Smile :size="16" />
+        </button>
+        <label class="toolbar-btn media-picker" title="添加图片或视频">
+          <ImagePlus :size="16" />
           <input type="file" accept="image/*,video/*" @change="onMedia" />
         </label>
+      </div>
+
+      <div class="sticker-panel" v-if="showStickers">
+        <div class="sticker-head">
+          <h3>微博微信常用表情</h3>
+        </div>
+        <div class="sticker-grid">
+          <button
+            v-for="sticker in stickers"
+            :key="sticker.key"
+            class="sticker-item"
+            type="button"
+            @click="insertSticker(sticker.value)"
+          >
+            <span class="sticker-face">{{ sticker.value }}</span>
+            <span class="sticker-label">{{ sticker.label }}</span>
+          </button>
+        </div>
       </div>
 
       <img v-if="previewImage" class="preview" :src="previewImage" alt="preview image" />
@@ -23,6 +44,7 @@
 </template>
 
 <script setup>
+import { ImagePlus, Smile } from 'lucide-vue-next'
 import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createPost, uploadImage, uploadVideo } from '@/api'
@@ -36,6 +58,41 @@ const mediaType = ref('')
 const previewImage = ref('')
 const previewVideo = ref('')
 const publishing = ref(false)
+const showStickers = ref(false)
+const editorRef = ref(null)
+const stickers = [
+  { key: 'smile', label: '微笑', value: '[微笑]' },
+  { key: 'laugh', label: '偷笑', value: '[偷笑]' },
+  { key: 'wink', label: '眨眼', value: '[眨眼]' },
+  { key: 'cry', label: '流泪', value: '[流泪]' },
+  { key: 'angry', label: '生气', value: '[生气]' },
+  { key: 'ok', label: 'OK', value: '[OK]' },
+  { key: 'heart', label: '爱心', value: '[爱心]' },
+  { key: 'thumb', label: '赞', value: '[赞]' },
+  { key: 'clap', label: '鼓掌', value: '[鼓掌]' },
+  { key: 'bye', label: '拜拜', value: '[拜拜]' }
+]
+
+const insertSticker = (value) => {
+  if (!value) {
+    return
+  }
+  const editor = editorRef.value
+  if (!editor) {
+    content.value = `${content.value}${content.value ? ' ' : ''}${value}`
+    return
+  }
+  const start = editor.selectionStart ?? content.value.length
+  const end = editor.selectionEnd ?? start
+  const before = content.value.slice(0, start)
+  const after = content.value.slice(end)
+  content.value = `${before}${value}${after}`
+  const nextPos = start + value.length
+  requestAnimationFrame(() => {
+    editor.focus()
+    editor.setSelectionRange(nextPos, nextPos)
+  })
+}
 
 const onMedia = async (event) => {
   const file = event.target.files?.[0]
@@ -113,12 +170,15 @@ const publish = async () => {
 <style scoped>
 .publish-page {
   display: grid;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
 }
 
 .panel {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf8;
+  background: var(--paper);
   padding: 14px;
 }
 
@@ -128,30 +188,88 @@ h2 {
 
 textarea {
   width: 100%;
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 10px;
   font: inherit;
   resize: vertical;
+  background: transparent;
+  color: var(--ink);
 }
 
-.upload-row {
+.toolbar-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
 }
 
-.upload {
-  border: 1px dashed #d7c7b3;
-  border-radius: 999px;
-  padding: 8px 12px;
+.toolbar-btn {
+  border: 1px solid var(--line);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  font-weight: 700;
 }
 
-.upload input {
+.toolbar-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.media-picker input {
   display: none;
+}
+
+.sticker-panel {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 90%, var(--paper) 10%);
+  padding: 10px;
+}
+
+.sticker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.sticker-head h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.sticker-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.sticker-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 7px 6px;
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  cursor: pointer;
+}
+
+.sticker-face {
+  font-size: 1.02rem;
+}
+
+.sticker-label {
+  color: var(--muted);
+  font-size: 0.76rem;
 }
 
 .preview {
@@ -170,17 +288,18 @@ textarea {
 }
 
 .btn {
-  border: 1px solid #e7dccf;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 14px;
   cursor: pointer;
   font-weight: 700;
-  background: #fff;
+  background: transparent;
+  color: var(--ink);
 }
 
 .btn.primary {
-  border-color: #f25a29;
-  background: #f25a29;
-  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
 }
 </style>

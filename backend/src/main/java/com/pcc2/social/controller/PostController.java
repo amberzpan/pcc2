@@ -69,18 +69,12 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return Result.error(401, "未登录");
+        }
         return Result.success(postService.getHotPosts(page, size, userId));
     }
 
-    @GetMapping("/discover")
-    public Result<?> getDiscoverPosts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return Result.success(postService.getDiscoverPosts(page, size, userId));
-    }
-    
     @GetMapping("/user/{userId}")
     public Result<?> getUserPosts(
             @PathVariable Long userId,

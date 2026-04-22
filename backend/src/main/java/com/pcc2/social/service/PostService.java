@@ -19,7 +19,11 @@ public class PostService {
     private final FollowMapper followMapper;
     private final FavoriteMapper favoriteMapper;
     
-    public PostService(PostMapper postMapper, LikeRecordMapper likeRecordMapper, UserMapper userMapper, FollowMapper followMapper, FavoriteMapper favoriteMapper) {
+    public PostService(PostMapper postMapper,
+                       LikeRecordMapper likeRecordMapper,
+                       UserMapper userMapper,
+                       FollowMapper followMapper,
+                       FavoriteMapper favoriteMapper) {
         this.postMapper = postMapper;
         this.likeRecordMapper = likeRecordMapper;
         this.userMapper = userMapper;
@@ -81,15 +85,6 @@ public class PostService {
         int safeSize = Math.min(Math.max(size, 1), 50);
         int offset = (safePage - 1) * safeSize;
         List<Post> posts = postMapper.findHot(offset, safeSize);
-        hydratePostStatus(posts, currentUserId);
-        return posts;
-    }
-
-    public List<Post> getDiscoverPosts(int page, int size, Long currentUserId) {
-        int safePage = Math.max(page, 1);
-        int safeSize = Math.min(Math.max(size, 1), 50);
-        int offset = (safePage - 1) * safeSize;
-        List<Post> posts = postMapper.findDiscover(currentUserId, offset, safeSize);
         hydratePostStatus(posts, currentUserId);
         return posts;
     }

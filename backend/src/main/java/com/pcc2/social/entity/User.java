@@ -10,6 +10,7 @@ public class User {
     private String password;
     private String nickname;
     private String avatar;
+    private String coverUrl;
     private String bio;
     private Integer followersCount;
     private Integer followingCount;
@@ -54,6 +55,14 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
     }
 
     public String getBio() {

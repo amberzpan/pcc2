@@ -8,10 +8,12 @@ public class UserVO {
     private String username;
     private String nickname;
     private String avatar;
+    private String coverUrl;
     private String bio;
     private Integer followersCount;
     private Integer followingCount;
     private Boolean followed;
+    private java.time.LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -45,6 +47,14 @@ public class UserVO {
         this.avatar = avatar;
     }
 
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
+
     public String getBio() {
         return bio;
     }
@@ -75,5 +85,13 @@ public class UserVO {
 
     public void setFollowed(Boolean followed) {
         this.followed = followed;
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { resolveLayoutFlags } from '../../utils/layout.js'
+
+function readApp() {
+  const url = new URL('../../App.vue', import.meta.url)
+  return fs.readFileSync(fileURLToPath(url), 'utf8')
+}
 
 function resolveLayoutClassNames(pathname, loggedIn) {
   const flags = resolveLayoutFlags(pathname, loggedIn)
@@ -72,5 +79,14 @@ describe('layout flags', () => {
       guestLayout: true,
       guestWideLayout: false
     })
+  })
+
+  it('should keep sidebar fixed layout scaffold in app shell', () => {
+    const content = readApp()
+
+    assert.match(content, /'with-sidebar':\s*layoutFlags\.value\.showSidebar/)
+    assert.match(content, /\.layout\.with-sidebar/)
+    assert.match(content, /\.sidebar\s*\{[\s\S]*position:\s*fixed/)
+    assert.match(content, /\.layout\.with-sidebar \.page\s*\{[\s\S]*margin-left:/)
   })
 })
