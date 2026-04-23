@@ -4,7 +4,7 @@
       <div class="cover clickable-media" @click="onCoverClick">
         <img v-if="viewUser.coverUrl" :src="viewUser.coverUrl" alt="cover" />
         <div v-else class="cover-placeholder">暂无背景图</div>
-        <button v-if="isSelf" class="camera-btn cover-camera-btn" type="button" title="更换背景图" @click.stop="triggerCoverUpload">
+        <button v-if="isSelf && editing" class="camera-btn cover-camera-btn" type="button" title="更换背景图" @click.stop="triggerCoverUpload">
           <Camera :size="14" />
         </button>
       </div>
@@ -12,16 +12,30 @@
       <div class="profile-main">
         <div class="avatar-wrap clickable-media" @click="onAvatarClick">
           <img class="avatar" :src="viewUser.avatar || defaultAvatar" alt="avatar" />
-          <button v-if="isSelf" class="camera-btn avatar-camera-btn" type="button" title="更换头像" @click.stop="triggerAvatarUpload">
+          <button v-if="isSelf && editing" class="camera-btn avatar-camera-btn" type="button" title="更换头像" @click.stop="triggerAvatarUpload">
             <Camera :size="14" />
           </button>
         </div>
 
         <div class="identity">
-          <h2>{{ viewUser.nickname || viewUser.username }}</h2>
-          <p>@{{ viewUser.username }}</p>
-          <small>{{ viewUser.bio || '这个人很神秘，还没有留下简介。' }}</small>
-          <small class="meta-line">注册于 {{ formatDate(viewUser.createdAt) }}</small>
+          <h2>{{ viewUser.nickname || viewUser.username || '未设置昵称' }}</h2>
+          <p class="username-line">@{{ viewUser.username }}</p>
+          <p class="meta-line">注册于 {{ formatDate(viewUser.createdAt) }}</p>
+          <p class="bio-inline">{{ viewUser.bio || '该用户暂未填写简介。' }}</p>
+          <div class="stats-row">
+            <div class="stat plain">
+              <strong>{{ profilePostCount }}</strong>
+              <span>帖子</span>
+            </div>
+            <button class="stat" @click="openRelation('following')">
+              <strong>{{ viewUser.followingCount || 0 }}</strong>
+              <span>关注</span>
+            </button>
+            <button class="stat" @click="openRelation('followers')">
+              <strong>{{ viewUser.followersCount || 0 }}</strong>
+              <span>粉丝</span>
+            </button>
+          </div>
         </div>
 
         <div class="hero-actions">
@@ -34,17 +48,6 @@
         </div>
       </div>
 
-      <div class="stats-row">
-        <button class="stat" @click="openRelation('following')">
-          <strong>{{ viewUser.followingCount || 0 }}</strong>
-          <span>关注</span>
-        </button>
-        <button class="stat" @click="openRelation('followers')">
-          <strong>{{ viewUser.followersCount || 0 }}</strong>
-          <span>粉丝</span>
-        </button>
-      </div>
-
       <input ref="avatarFileInput" class="hidden-input" type="file" accept="image/*" @change="onAvatarUpload" />
       <input ref="coverFileInput" class="hidden-input" type="file" accept="image/*" @change="onCoverUpload" />
     </article>
@@ -54,7 +57,7 @@
       <div class="grid">
         <label>
           昵称
-          <input v-model="form.nickname" placeholder="请输入昵称" required />
+          <input v-model="form.nickname" placeholder="你的昵称" required />
         </label>
       </div>
       <label class="bio-label">
@@ -75,8 +78,8 @@
         <button class="tab-btn" :class="{ active: activeTab === 'favorites' }" data-tab="favorites" @click="switchTab('favorites')">收藏</button>
       </div>
 
-      <div v-if="postsLoading" class="hint">加载中...</div>
-      <div v-else-if="posts.length === 0" class="hint">还没有发布内容</div>
+      <div v-if="postsLoading && posts.length === 0" class="hint">帖子加载中</div>
+      <div v-else-if="posts.length === 0" class="hint">暂无发布内容</div>
 
       <PostCard
         v-for="post in posts"
@@ -106,7 +109,7 @@
           <h3>{{ relation.type === 'followers' ? '粉丝列表' : '关注列表' }}</h3>
           <button class="close-btn" @click="closeRelation">关闭</button>
         </header>
-        <div v-if="relation.loading" class="hint">加载中...</div>
+        <div v-if="relation.loading" class="hint">列表加载中</div>
         <div v-else-if="relation.items.length === 0" class="hint">暂无数据</div>
         <div v-else class="relation-list">
           <button class="relation-user" v-for="item in relation.items" :key="`${relation.type}-${item.id}`" @click="jumpToUser(item.id)">
@@ -130,10 +133,54 @@
         <img :src="imagePreview.url" :alt="imagePreview.title" />
       </article>
     </div>
+
+    <div class="overlay image-editor-overlay" v-if="imageEditor.show" @click.self="closeImageEditor">
+      <article class="image-editor-card">
+        <header>
+          <div>
+            <h3>{{ imageEditor.title }}</h3>
+            <p>调整显示位置后再保存。</p>
+          </div>
+          <button class="close-btn" type="button" @click="closeImageEditor">关闭</button>
+        </header>
+
+        <div class="edit-preview" :class="imageEditor.type">
+          <img
+            :src="imageEditor.sourceUrl"
+            alt="图片编辑预览"
+            :style="{
+              transform: `translate(-50%, -50%) translate(${imageEditor.offsetX}%, ${imageEditor.offsetY}%) scale(${imageEditor.scale})`
+            }"
+          />
+        </div>
+
+        <div class="edit-controls">
+          <label>
+            缩放
+            <input v-model.number="imageEditor.scale" type="range" min="1" max="2.4" step="0.02" />
+          </label>
+          <label>
+            水平位置
+            <input v-model.number="imageEditor.offsetX" type="range" min="-35" max="35" step="1" />
+          </label>
+          <label>
+            垂直位置
+            <input v-model.number="imageEditor.offsetY" type="range" min="-35" max="35" step="1" />
+          </label>
+        </div>
+
+        <footer class="editor-actions">
+          <button class="close-btn" type="button" @click="closeImageEditor">取消</button>
+          <button class="save-btn" type="button" :disabled="imageEditor.saving" @click="saveEditedImage">
+            {{ imageEditor.saving ? '正在保存' : '保存图片' }}
+          </button>
+        </footer>
+      </article>
+    </div>
   </section>
 
   <section v-else-if="hasResolvedProfile" class="panel hint">用户不存在或已被删除</section>
-  <section v-else class="panel hint">加载中...</section>
+  <section v-else class="panel hint">主页加载中</section>
 </template>
 
 <script setup>
@@ -182,6 +229,17 @@ const imagePreview = ref({
   url: '',
   title: ''
 })
+const imageEditor = ref({
+  show: false,
+  type: 'cover',
+  title: '',
+  file: null,
+  sourceUrl: '',
+  scale: 1,
+  offsetX: 0,
+  offsetY: 0,
+  saving: false
+})
 
 const posts = ref([])
 const postsPage = ref(1)
@@ -189,6 +247,7 @@ const postsSize = 10
 const postsLoading = ref(false)
 const postsHasMore = ref(false)
 const activeTab = ref('posts')
+const profilePostCount = ref(0)
 const loadMoreRef = ref(null)
 const relationLoadMoreRef = ref(null)
 const avatarFileInput = ref(null)
@@ -232,6 +291,7 @@ const loadProfile = async () => {
   if (!targetUserId.value) {
     viewUser.value = null
     posts.value = []
+    profilePostCount.value = 0
     hasResolvedProfile.value = true
     return
   }
@@ -244,14 +304,18 @@ const loadProfile = async () => {
         followingCount: res.data.followingCount || 0,
         followed: !!res.data.followed
       }
+      const initialPostCount = Number(res.data.postCount)
+      profilePostCount.value = Number.isFinite(initialPostCount) && initialPostCount >= 0 ? initialPostCount : 0
       syncForm()
     } else {
       viewUser.value = null
       posts.value = []
+      profilePostCount.value = 0
     }
   } catch {
     viewUser.value = null
     posts.value = []
+    profilePostCount.value = 0
   } finally {
     hasResolvedProfile.value = true
   }
@@ -285,8 +349,11 @@ const fetchPosts = async (reset = true) => {
     const next = res.code === 200 ? normalizePostList(res.data) : []
     posts.value = reset ? next : posts.value.concat(next)
     postsHasMore.value = next.length === postsSize
+    if (activeTab.value === 'posts') {
+      profilePostCount.value = Math.max(profilePostCount.value, posts.value.length)
+    }
   } catch {
-    showToast('加载动态失败', 'error')
+    showToast('帖子加载失败，请稍后重试', 'error')
   } finally {
     postsLoading.value = false
   }
@@ -333,10 +400,10 @@ const saveProfile = async () => {
       syncForm()
       await reloadUser()
     } else {
-      showToast(res.message || '更新失败', 'error')
+      showToast(res.message || '保存失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('更新失败', 'error')
+    showToast('保存失败，请稍后重试', 'error')
   }
 }
 
@@ -371,6 +438,128 @@ const closeImagePreview = () => {
   }
 }
 
+const revokeEditorSource = () => {
+  if (imageEditor.value.sourceUrl) {
+    URL.revokeObjectURL(imageEditor.value.sourceUrl)
+  }
+}
+
+const openImageEditor = (file, type) => {
+  revokeEditorSource()
+  imageEditor.value = {
+    show: true,
+    type,
+    title: type === 'avatar' ? '编辑头像' : '编辑背景图',
+    file,
+    sourceUrl: URL.createObjectURL(file),
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+    saving: false
+  }
+}
+
+const closeImageEditor = () => {
+  revokeEditorSource()
+  imageEditor.value = {
+    show: false,
+    type: 'cover',
+    title: '',
+    file: null,
+    sourceUrl: '',
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+    saving: false
+  }
+}
+
+const loadImageElement = (url) => new Promise((resolve, reject) => {
+  const image = new Image()
+  image.onload = () => resolve(image)
+  image.onerror = reject
+  image.src = url
+})
+
+const renderEditedImage = async () => {
+  const editor = imageEditor.value
+  const source = await loadImageElement(editor.sourceUrl)
+  const output = editor.type === 'avatar'
+    ? { width: 640, height: 640 }
+    : { width: 1600, height: 520 }
+  const canvas = document.createElement('canvas')
+  canvas.width = output.width
+  canvas.height = output.height
+  const context = canvas.getContext('2d')
+  context.fillStyle = '#f8fafc'
+  context.fillRect(0, 0, output.width, output.height)
+
+  const fitScale = Math.max(output.width / source.naturalWidth, output.height / source.naturalHeight)
+  const drawScale = fitScale * editor.scale
+  const drawWidth = source.naturalWidth * drawScale
+  const drawHeight = source.naturalHeight * drawScale
+  const dx = (output.width - drawWidth) / 2 + (editor.offsetX / 100) * output.width * 0.5
+  const dy = (output.height - drawHeight) / 2 + (editor.offsetY / 100) * output.height * 0.5
+  context.drawImage(source, dx, dy, drawWidth, drawHeight)
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9)
+  })
+}
+
+const saveEditedImage = async () => {
+  if (!imageEditor.value.file || imageEditor.value.saving) {
+    return
+  }
+  imageEditor.value.saving = true
+  const type = imageEditor.value.type
+  try {
+    const blob = await renderEditedImage()
+    if (!blob) {
+      showToast('图片处理失败，请稍后重试', 'error')
+      return
+    }
+    const filename = type === 'avatar' ? 'avatar.jpg' : 'cover.jpg'
+    const editedFile = new File([blob], filename, { type: 'image/jpeg' })
+    const res = await uploadImage(editedFile)
+    if (res.code !== 200 || !res.data?.url) {
+      showToast(type === 'avatar' ? '头像上传失败，请稍后重试' : '背景图上传失败，请稍后重试', 'error')
+      return
+    }
+    const payload = {
+      nickname: viewUser.value.nickname || viewUser.value.username,
+      bio: viewUser.value.bio || ''
+    }
+    if (type === 'avatar') {
+      payload.avatar = res.data.url
+    } else {
+      payload.coverUrl = res.data.url
+    }
+    const updateRes = await updateUserInfo(payload)
+    if (updateRes.code === 200 && updateRes.data) {
+      viewUser.value = {
+        ...viewUser.value,
+        ...updateRes.data,
+        followed: viewUser.value.followed,
+        followersCount: viewUser.value.followersCount,
+        followingCount: viewUser.value.followingCount
+      }
+      syncForm()
+      await reloadUser()
+      showToast(type === 'avatar' ? '头像已更新' : '背景图已更新')
+      closeImageEditor()
+      return
+    }
+    showToast(type === 'avatar' ? '头像上传失败，请稍后重试' : '背景图上传失败，请稍后重试', 'error')
+  } catch {
+    showToast(type === 'avatar' ? '头像上传失败，请稍后重试' : '背景图上传失败，请稍后重试', 'error')
+  } finally {
+    if (imageEditor.value.show) {
+      imageEditor.value.saving = false
+    }
+  }
+}
+
 const onAvatarClick = () => {
   openImagePreview(viewUser.value?.avatar || '', '头像预览')
 }
@@ -382,67 +571,15 @@ const onCoverClick = () => {
 const onAvatarUpload = async (event) => {
   const file = event.target.files?.[0]
   if (!file) return
-  try {
-    const res = await uploadImage(file)
-    if (res.code !== 200 || !res.data?.url) {
-      showToast('头像上传失败', 'error')
-      return
-    }
-    const updateRes = await updateUserInfo({
-      nickname: viewUser.value.nickname || viewUser.value.username,
-      bio: viewUser.value.bio || '',
-      avatar: res.data.url
-    })
-    if (updateRes.code === 200 && updateRes.data) {
-      viewUser.value = {
-        ...viewUser.value,
-        ...updateRes.data,
-        followed: viewUser.value.followed,
-        followersCount: viewUser.value.followersCount,
-        followingCount: viewUser.value.followingCount
-      }
-      syncForm()
-      await reloadUser()
-      showToast('头像已更新')
-      return
-    }
-    showToast('头像上传失败', 'error')
-  } catch {
-    showToast('头像上传失败', 'error')
-  }
+  openImageEditor(file, 'avatar')
+  event.target.value = ''
 }
 
 const onCoverUpload = async (event) => {
   const file = event.target.files?.[0]
   if (!file) return
-  try {
-    const res = await uploadImage(file)
-    if (res.code !== 200 || !res.data?.url) {
-      showToast('背景图上传失败', 'error')
-      return
-    }
-    const updateRes = await updateUserInfo({
-      nickname: viewUser.value.nickname || viewUser.value.username,
-      bio: viewUser.value.bio || '',
-      coverUrl: res.data.url
-    })
-    if (updateRes.code === 200 && updateRes.data) {
-      viewUser.value = {
-        ...viewUser.value,
-        ...updateRes.data,
-        followed: viewUser.value.followed,
-        followersCount: viewUser.value.followersCount,
-        followingCount: viewUser.value.followingCount
-      }
-      syncForm()
-      await reloadUser()
-      showToast('背景图已更新')
-      return
-    }
-    showToast('背景图上传失败', 'error')
-  } catch {
-    showToast('背景图上传失败', 'error')
-  }
+  openImageEditor(file, 'cover')
+  event.target.value = ''
 }
 
 const toggleProfileFollow = async () => {
@@ -458,13 +595,13 @@ const toggleProfileFollow = async () => {
       await reloadUser()
     }
   } catch {
-    showToast('关注操作失败', 'error')
+    showToast('关注失败，请稍后重试', 'error')
   }
 }
 
 const togglePostLike = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -474,13 +611,13 @@ const togglePostLike = async (post) => {
       post.likeCount = Math.max(0, (post.likeCount || 0) + (post.liked ? 1 : -1))
     }
   } catch {
-    showToast('点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
 const togglePostFavorite = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后收藏', 'error')
     return
   }
   try {
@@ -489,13 +626,13 @@ const togglePostFavorite = async (post) => {
       post.favorited = !!res.data.favorited
     }
   } catch {
-    showToast('收藏失败', 'error')
+    showToast('收藏失败，请稍后重试', 'error')
   }
 }
 
 const togglePostFollow = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后关注用户', 'error')
     return
   }
   try {
@@ -507,42 +644,44 @@ const togglePostFollow = async (post) => {
       }
     }
   } catch {
-    showToast('关注操作失败', 'error')
+    showToast('关注失败，请稍后重试', 'error')
   }
 }
 
 const repost = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后转发', 'error')
     return
   }
-  const content = window.prompt('请输入转发语（可选）')
+  const content = window.prompt('请输入转发内容（可选）')
   if (content === null) return
   try {
     const res = await createPost({ content, repostId: post.id })
     if (res.code === 200) {
       post.repostCount = (post.repostCount || 0) + 1
+      post.reposted = true
       showToast('转发成功')
     } else {
-      showToast(res.message || '转发失败', 'error')
+      showToast(res.message || '转发失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('转发失败', 'error')
+    showToast('转发失败，请稍后重试', 'error')
   }
 }
 
 const removePost = async (postId) => {
-  if (!window.confirm('确定删除这条动态吗？')) return
+  if (!window.confirm('确认删除该内容？')) return
   try {
     const res = await deletePost(postId)
     if (res.code === 200) {
       posts.value = posts.value.filter((item) => item.id !== postId)
+      profilePostCount.value = Math.max(0, profilePostCount.value - 1)
       showToast('删除成功')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
@@ -561,7 +700,7 @@ const loadComments = async (post) => {
       post.comments = normalizeComments(res.data)
     }
   } catch {
-    showToast('评论加载失败', 'error')
+    showToast('评论加载失败，请稍后重试', 'error')
   } finally {
     post.commentsLoading = false
   }
@@ -569,7 +708,7 @@ const loadComments = async (post) => {
 
 const submitComment = async (post) => {
   if (!post.newComment.trim()) {
-    showToast('评论不能为空', 'error')
+    showToast('请输入评论内容', 'error')
     return
   }
   try {
@@ -582,12 +721,12 @@ const submitComment = async (post) => {
       })
       post.commentCount = (post.commentCount || 0) + 1
       post.newComment = ''
-      showToast('评论成功')
+      showToast('评论发布成功')
     } else {
-      showToast(res.message || '评论失败', 'error')
+      showToast(res.message || '评论发布失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('评论失败', 'error')
+    showToast('评论发布失败，请稍后重试', 'error')
   }
 }
 
@@ -599,16 +738,16 @@ const removeComment = async ({ post, commentId }) => {
       post.commentCount = Math.max(0, (post.commentCount || 0) - 1)
       showToast('评论已删除')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
 const toggleCommentLike = async ({ post, comment }) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -621,7 +760,7 @@ const toggleCommentLike = async ({ post, comment }) => {
       }
     }
   } catch {
-    showToast('评论点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
@@ -679,7 +818,7 @@ const loadRelation = async (reset = false) => {
     await nextTick()
     setupRelationInfiniteLoad()
   } catch {
-    showToast('加载列表失败', 'error')
+    showToast('列表加载失败，请稍后重试', 'error')
   } finally {
     relation.value.loading = false
   }
@@ -787,6 +926,7 @@ onBeforeUnmount(() => {
     observer = null
   }
   teardownRelationInfiniteLoad()
+  revokeEditorSource()
 })
 </script>
 
@@ -804,6 +944,7 @@ onBeforeUnmount(() => {
   border-radius: 18px;
   background: var(--paper);
   padding: 14px;
+  box-shadow: 0 10px 26px color-mix(in srgb, #0f172a 8%, transparent);
 }
 
 .hero {
@@ -812,21 +953,23 @@ onBeforeUnmount(() => {
 }
 
 .cover {
-  height: 120px;
+  height: 150px;
   width: 100%;
   background: var(--surface);
   overflow: hidden;
   position: relative;
+  cursor: default;
 }
 
 .clickable-media {
-  cursor: zoom-in;
+  cursor: default;
 }
 
 .cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: default;
 }
 
 .cover-placeholder {
@@ -839,16 +982,18 @@ onBeforeUnmount(() => {
 
 .profile-main {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   gap: 14px;
-  margin-top: -32px;
+  margin-top: 0;
   padding: 0 14px 10px;
 }
 
 .avatar-wrap {
   position: relative;
   width: fit-content;
+  margin-top: -38px;
+  cursor: default;
 }
 
 .avatar {
@@ -857,31 +1002,59 @@ onBeforeUnmount(() => {
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--paper);
+  cursor: default;
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+  min-width: 0;
 }
 
 .identity h2 {
   margin: 0;
-  font-size: 1.36rem;
+  font-size: 1.34rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  font-weight: 700;
 }
 
-.identity p {
-  margin: 4px 0;
+.username-line {
+  margin: 2px 0 0;
   color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.28;
+  font-weight: 400;
 }
 
-.identity small {
-  color: var(--muted);
-  display: block;
+.bio-inline {
+  margin: 10px 0 0;
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 0.98rem;
+  font-weight: 400;
+  max-width: 65ch;
 }
 
 .meta-line {
-  margin-top: 2px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.35;
 }
 
 .hero-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  align-self: start;
+  justify-self: end;
+  margin-left: 14px;
 }
 
 .action-btn {
@@ -892,6 +1065,13 @@ onBeforeUnmount(() => {
   padding: 8px 14px;
   cursor: pointer;
   font-weight: 700;
+  transition: transform 0.16s ease, border-color 0.16s ease, filter 0.16s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .action-btn.primary {
@@ -900,31 +1080,55 @@ onBeforeUnmount(() => {
   color: var(--paper);
 }
 
+.action-btn.primary:hover {
+  background: var(--accent);
+  filter: brightness(1.03);
+}
+
 .stats-row {
   display: flex;
-  gap: 8px;
-  padding: 0 14px 14px;
+  gap: 16px;
+  margin-top: 10px;
+  align-items: baseline;
 }
 
 .stat {
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border: 0;
   background: transparent;
-  min-width: 90px;
-  padding: 7px 10px;
+  min-width: auto;
+  padding: 0;
   cursor: pointer;
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
+  line-height: 1.28;
+  transition: transform 0.16s ease, color 0.16s ease;
+}
+
+.stat:hover {
+  transform: translateY(-1px);
+  color: var(--ink);
 }
 
 .stat strong {
-  font-size: 0.98rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .stat span {
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--ink) 62%, var(--muted));
+  font-size: 0.92rem;
+  font-weight: 400;
+}
+
+.stat.plain {
+  cursor: default;
+}
+
+.stat.plain:hover {
+  transform: none;
+  color: inherit;
 }
 
 .timeline {
@@ -949,6 +1153,13 @@ onBeforeUnmount(() => {
   padding: 6px 12px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.tab-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--line) 66%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .tab-btn.active {
@@ -976,8 +1187,16 @@ textarea {
   border-radius: 10px;
   padding: 8px 10px;
   font: inherit;
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 92%, var(--paper));
   color: var(--ink);
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, #1d9bf0 45%, var(--line));
+  background: var(--surface);
 }
 
 .bio-label {
@@ -992,6 +1211,13 @@ textarea {
   color: var(--paper);
   font-weight: 700;
   padding: 9px 14px;
+  cursor: pointer;
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
 .auto-load {
@@ -1077,6 +1303,84 @@ textarea {
   background: var(--surface);
 }
 
+.image-editor-overlay {
+  z-index: 60;
+}
+
+.image-editor-card {
+  width: min(720px, calc(100vw - 24px));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 24px 60px color-mix(in srgb, #0f172a 24%, transparent);
+}
+
+.image-editor-card header,
+.editor-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.image-editor-card h3,
+.image-editor-card p {
+  margin: 0;
+}
+
+.image-editor-card p {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.edit-preview {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+}
+
+.edit-preview.cover {
+  height: 230px;
+  border-radius: 14px;
+}
+
+.edit-preview.avatar {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  justify-self: center;
+}
+
+.edit-preview img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  will-change: transform;
+  user-select: none;
+  pointer-events: none;
+}
+
+.edit-controls {
+  display: grid;
+  gap: 10px;
+}
+
+.edit-controls input[type='range'] {
+  padding: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
 .relation-modal header {
   display: flex;
   justify-content: space-between;
@@ -1096,6 +1400,13 @@ textarea {
   color: var(--ink);
   padding: 6px 10px;
   cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.close-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .relation-list {
@@ -1114,6 +1425,13 @@ textarea {
   gap: 10px;
   text-align: left;
   cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.relation-user:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--line) 66%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .relation-user img {
@@ -1129,6 +1447,14 @@ textarea {
   font-size: 0.84rem;
 }
 
+.relation-user strong {
+  color: var(--ink);
+}
+
+:global(:root[data-theme='dark']) .relation-user strong {
+  color: #f8fafc;
+}
+
 .hint {
   text-align: center;
   color: var(--muted);
@@ -1142,7 +1468,11 @@ textarea {
   .profile-main {
     grid-template-columns: 1fr;
     text-align: center;
-    margin-top: -18px;
+    margin-top: 0;
+  }
+
+  .avatar-wrap {
+    margin: -20px auto 0;
   }
 
   .avatar {
@@ -1151,13 +1481,20 @@ textarea {
 
   .hero-actions {
     justify-content: center;
+    margin-left: 0;
   }
 
   .stats-row {
     justify-content: center;
   }
 
+  .identity {
+    align-items: center;
+    text-align: center;
+  }
+
   .stats-row {
+    justify-content: center;
     flex-wrap: wrap;
   }
 }

@@ -25,12 +25,15 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if ("POST".equalsIgnoreCase(method) && ("/api/user/login".equals(uri) || "/api/user/register".equals(uri))) {
+        if ("POST".equalsIgnoreCase(method) && (
+                "/api/user/login".equals(uri)
+                        || "/api/user/register".equals(uri)
+                        || "/api/user/forgot-password".equals(uri))) {
             return true;
         }
 
         if ("GET".equalsIgnoreCase(method)) {
-            if ("/api/post/hot".equals(uri) || "/api/post/following".equals(uri)) {
+            if ("/api/post/following".equals(uri)) {
                 return false;
             }
             return true;
@@ -68,6 +71,9 @@ public class JwtInterceptor implements HandlerInterceptor {
             request.setAttribute("username", username);
 
         } catch (Exception e) {
+            if (isPublicRequest(request)) {
+                return true;
+            }
             response.setStatus(401);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":401,\"message\":\"Token无效\",\"data\":null}");

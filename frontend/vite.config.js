@@ -14,6 +14,10 @@ export default defineConfig({
       '/images': {
         target: 'http://localhost:9090',
         changeOrigin: true
+      },
+      '/videos': {
+        target: 'http://localhost:9090',
+        changeOrigin: true
       }
     }
   },

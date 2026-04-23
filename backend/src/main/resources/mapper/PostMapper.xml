@@ -56,6 +56,12 @@
         LEFT JOIN user u ON p.user_id = u.id
         WHERE p.id = #{id}
     </select>
+
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(1)
+        FROM post
+        WHERE user_id = #{userId}
+    </select>
     
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO post (user_id, content, media_url, media_type, repost_id, original_content, like_count, comment_count, repost_count)

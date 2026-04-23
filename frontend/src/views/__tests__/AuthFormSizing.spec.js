@@ -13,7 +13,7 @@ describe('auth form sizing', () => {
     const login = readTemplate('../LoginView.vue')
     const register = readTemplate('../RegisterView.vue')
 
-    assert.match(login, /width:\s*min\(760px, 100%\)/)
-    assert.match(register, /width:\s*min\(760px, 100%\)/)
+    assert.match(login, /width:\s*min\(920px, 100%\)/)
+    assert.match(register, /width:\s*min\(920px, 100%\)/)
   })
 })

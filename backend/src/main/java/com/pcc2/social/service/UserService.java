@@ -1,11 +1,13 @@
 package com.pcc2.social.service;
 
 import com.pcc2.social.dto.ChangePasswordRequest;
+import com.pcc2.social.dto.ForgotPasswordRequest;
 import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.dto.UserVO;
 import com.pcc2.social.entity.User;
 import com.pcc2.social.mapper.FollowMapper;
+import com.pcc2.social.mapper.PostMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +24,7 @@ import java.util.Map;
 public class UserService {
     private final UserMapper userMapper;
     private final FollowMapper followMapper;
+    private final PostMapper postMapper;
     private final UserSchemaCompatibilityService schemaCompatibilityService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -33,9 +36,11 @@ public class UserService {
     
     public UserService(UserMapper userMapper,
                        FollowMapper followMapper,
+                       PostMapper postMapper,
                        UserSchemaCompatibilityService schemaCompatibilityService) {
         this.userMapper = userMapper;
         this.followMapper = followMapper;
+        this.postMapper = postMapper;
         this.schemaCompatibilityService = schemaCompatibilityService;
     }
     
@@ -150,6 +155,18 @@ public class UserService {
         userMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
     }
 
+    public void resetPassword(ForgotPasswordRequest request) {
+        String validateMessage = validateForgotPasswordRequest(request);
+        if (validateMessage != null) {
+            throw new RuntimeException(validateMessage);
+        }
+        User user = userMapper.findByUsername(request.getUsername().trim());
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        userMapper.updatePassword(user.getId(), passwordEncoder.encode(request.getNewPassword()));
+    }
+
     public List<User> searchUsers(String keyword, int page, int size) {
         if (isBlank(keyword)) {
             return java.util.Collections.emptyList();
@@ -171,6 +188,7 @@ public class UserService {
         vo.setBio(user.getBio());
         vo.setFollowersCount(user.getFollowersCount() == null ? 0 : user.getFollowersCount());
         vo.setFollowingCount(user.getFollowingCount() == null ? 0 : user.getFollowingCount());
+        vo.setPostCount(Math.max(0, postMapper.countByUserId(user.getId())));
         vo.setCreatedAt(user.getCreatedAt());
         return vo;
     }
@@ -216,6 +234,22 @@ public class UserService {
         }
         if (isBlank(request.getOldPassword()) || isBlank(request.getNewPassword()) || isBlank(request.getConfirmPassword())) {
             return "密码不能为空";
+        }
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return "两次输入的新密码不一致";
+        }
+        if (!isValidPassword(request.getNewPassword())) {
+            return "新密码需为8-24位且包含字母和数字";
+        }
+        return null;
+    }
+
+    public String validateForgotPasswordRequest(ForgotPasswordRequest request) {
+        if (request == null) {
+            return "请求不能为空";
+        }
+        if (isBlank(request.getUsername()) || isBlank(request.getNewPassword()) || isBlank(request.getConfirmPassword())) {
+            return "用户名和新密码都要填写";
         }
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             return "两次输入的新密码不一致";

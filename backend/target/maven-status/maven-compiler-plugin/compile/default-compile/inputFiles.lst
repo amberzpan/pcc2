@@ -3,6 +3,7 @@ E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\LoginResponse.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\common\Result.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\Follow.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\config\ResourceConfig.java
+E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\dto\ForgotPasswordRequest.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\interceptor\JwtInterceptor.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\LikeRecord.java
 E:\vscode\code\pcc2\backend\src\main\java\com\pcc2\social\entity\Post.java

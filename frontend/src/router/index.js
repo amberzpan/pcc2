@@ -1,17 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import PublishView from '../views/PublishView.vue'
-import ProfileView from '../views/ProfileView.vue'
-import FavoritesView from '../views/FavoritesView.vue'
-import SearchView from '../views/SearchView.vue'
-import SettingsView from '../views/SettingsView.vue'
-import PostDetailView from '../views/PostDetailView.vue'
-import HelpView from '../views/HelpView.vue'
+
+const HomeView = () => import('../views/HomeView.vue')
+const LoginView = () => import('../views/LoginView.vue')
+const RegisterView = () => import('../views/RegisterView.vue')
+const PublishView = () => import('../views/PublishView.vue')
+const ProfileView = () => import('../views/ProfileView.vue')
+const FavoritesView = () => import('../views/FavoritesView.vue')
+const SearchView = () => import('../views/SearchView.vue')
+const SettingsView = () => import('../views/SettingsView.vue')
+const PostDetailView = () => import('../views/PostDetailView.vue')
+const HelpView = () => import('../views/HelpView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0, left: 0, behavior: 'auto' }
+  },
   routes: [
     {
       path: '/',

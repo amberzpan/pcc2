@@ -1,18 +1,18 @@
 const MODE_META = {
   all: {
-    label: '全部动态',
-    memberDescription: '按时间线查看社区动态，快速跟进今天的新内容。',
-    guestDescription: '游客可浏览公开动态，登录后可点赞、评论与收藏。'
+    label: '首页',
+    memberDescription: '按时间顺序看最新发布的内容。',
+    guestDescription: '未登录状态下可浏览公开内容；登录后可点赞、评论和收藏。'
   },
   hot: {
     label: '热门帖',
-    memberDescription: '系统按互动热度推荐正在讨论中的高热内容。',
-    guestDescription: '请先登录后查看热门动态。'
+    memberDescription: '按互动热度排序，优先展示讨论度较高的帖子。',
+    guestDescription: '登录后可以看热门帖。'
   },
   following: {
-    label: '关注动态',
-    memberDescription: '只看你关注的人，保持个人信息流的专注与连续。',
-    guestDescription: '请先登录后查看关注动态。'
+    label: '关注',
+    memberDescription: '仅展示你已关注用户发布的内容。',
+    guestDescription: '登录后可查看关注内容。'
   }
 }
 

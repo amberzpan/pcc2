@@ -3,6 +3,7 @@ export function normalizePost(post) {
     ...post,
     liked: !!post.liked,
     favorited: !!post.favorited,
+    reposted: !!post.reposted,
     followed: !!post.followed,
     showComments: !!post.showComments,
     comments: Array.isArray(post.comments) ? post.comments : [],

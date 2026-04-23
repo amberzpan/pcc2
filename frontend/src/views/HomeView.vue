@@ -3,41 +3,41 @@
     <div class="panel guest-hero" v-if="!isLoggedIn">
       <div class="hero-copy">
         <p class="eyebrow">SimpleSocial 社区</p>
-        <h1>看见正在发生的讨论，加入你关心的话题。</h1>
+        <h1>浏览社区动态，参与关注话题。</h1>
         <p class="hero-desc">
-          不登录也能浏览公开内容；注册后可关注创作者、参与评论，并构建属于你的高质量信息流。
+          未登录状态下可浏览公开内容；登录后可关注用户、参与评论并管理收藏。
         </p>
         <div class="hero-actions">
-          <router-link class="hero-btn solid" to="/register">立即注册</router-link>
-          <router-link class="hero-btn ghost" to="/login">已有账号，去登录</router-link>
+          <router-link class="hero-btn solid" to="/register">注册账号</router-link>
+          <router-link class="hero-btn ghost" to="/login">登录账号</router-link>
         </div>
       </div>
       <div class="hero-highlights">
         <article class="highlight-item">
-          <strong>热门追踪</strong>
-          <span>实时查看社区正在讨论的高热内容。</span>
+          <strong>热门内容</strong>
+          <span>查看社区当前讨论度较高的内容。</span>
         </article>
         <article class="highlight-item">
-          <strong>发现作者</strong>
-          <span>从公开动态里找到有价值的长期创作者。</span>
+          <strong>关注用户</strong>
+          <span>关注感兴趣的用户，持续查看其最新发布。</span>
         </article>
         <article class="highlight-item">
-          <strong>轻量参与</strong>
-          <span>登录后即可点赞、收藏、评论并管理个人主页。</span>
+          <strong>参与互动</strong>
+          <span>支持点赞、评论、转发与收藏等常用操作。</span>
         </article>
       </div>
     </div>
 
-    <div class="panel switcher">
+    <div class="panel switcher" v-if="isLoggedIn">
       <button :class="['switch-btn', mode === 'all' ? 'active' : '']" @click="changeMode('all')">首页</button>
-      <button :class="['switch-btn', mode === 'hot' ? 'active' : '']" :disabled="!isLoggedIn" @click="changeMode('hot')">热门动态</button>
+      <button :class="['switch-btn', mode === 'hot' ? 'active' : '']" :disabled="!isLoggedIn" @click="changeMode('hot')">热门</button>
       <button
         :class="['switch-btn', mode === 'following' ? 'active' : '']"
         :disabled="!isLoggedIn"
-        :title="isLoggedIn ? '' : '登录后可查看关注动态'"
+        :title="isLoggedIn ? '' : '登录后可查看关注内容'"
         @click="changeMode('following')"
       >
-        关注动态
+        关注
       </button>
     </div>
 
@@ -67,10 +67,10 @@
       @toggle-comment-like="toggleCommentLike"
     />
 
-    <div class="panel empty" v-if="!loading && posts.length === 0">当前没有内容</div>
+    <div class="panel empty" v-if="!loading && hasLoadedOnce && posts.length === 0">暂无内容</div>
 
     <div ref="loadMoreRef" class="auto-load" aria-hidden="true"></div>
-    <div class="panel hint" v-if="loading">加载中...</div>
+    <div class="panel hint" v-if="loading && !hasLoadedOnce && posts.length === 0">动态加载中</div>
   </section>
 </template>
 
@@ -108,6 +108,7 @@ const size = 10
 const hasMore = ref(false)
 const loading = ref(false)
 const mode = ref('all')
+const hasLoadedOnce = ref(false)
 const loadMoreRef = ref(null)
 let observer = null
 let latestRequestId = 0
@@ -133,7 +134,9 @@ const setMode = (nextMode, syncRoute = true) => {
 const fetchPosts = async (reset = true) => {
   if (reset) {
     page.value = 1
-    posts.value = []
+    if (!hasLoadedOnce.value) {
+      posts.value = []
+    }
   }
 
   loading.value = true
@@ -152,13 +155,15 @@ const fetchPosts = async (reset = true) => {
     if (res.code !== 200 || !Array.isArray(res.data)) {
       posts.value = []
       hasMore.value = false
+      hasLoadedOnce.value = true
       return
     }
     const next = normalizePostList(res.data)
     posts.value = reset ? next : posts.value.concat(next)
     hasMore.value = next.length === size
+    hasLoadedOnce.value = true
   } catch {
-    showToast('加载失败', 'error')
+    showToast('动态加载失败，请稍后重试', 'error')
   } finally {
     loading.value = false
   }
@@ -174,12 +179,14 @@ const loadMore = async () => {
 
 const changeMode = async (target) => {
   setMode(target)
+  document.querySelector('.page')?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   await fetchPosts(true)
 }
 
 const togglePostLike = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -189,13 +196,13 @@ const togglePostLike = async (post) => {
       post.likeCount = Math.max(0, (post.likeCount || 0) + (post.liked ? 1 : -1))
     }
   } catch {
-    showToast('点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
 const togglePostFavorite = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后收藏', 'error')
     return
   }
   try {
@@ -204,13 +211,13 @@ const togglePostFavorite = async (post) => {
       post.favorited = !!res.data.favorited
     }
   } catch {
-    showToast('收藏失败', 'error')
+    showToast('收藏失败，请稍后重试', 'error')
   }
 }
 
 const togglePostFollow = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后关注用户', 'error')
     return
   }
   try {
@@ -219,42 +226,43 @@ const togglePostFollow = async (post) => {
       post.followed = !!res.data.followed
     }
   } catch {
-    showToast('关注操作失败', 'error')
+    showToast('关注失败，请稍后重试', 'error')
   }
 }
 
 const repost = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后转发', 'error')
     return
   }
-  const content = window.prompt('请输入转发语（可选）')
+  const content = window.prompt('请输入转发内容（可选）')
   if (content === null) return
   try {
     const res = await createPost({ content, repostId: post.id })
     if (res.code === 200) {
       post.repostCount = (post.repostCount || 0) + 1
+      post.reposted = true
       showToast('转发成功')
     } else {
-      showToast(res.message || '转发失败', 'error')
+      showToast(res.message || '转发失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('转发失败', 'error')
+    showToast('转发失败，请稍后重试', 'error')
   }
 }
 
 const removePost = async (postId) => {
-  if (!window.confirm('确定删除这条动态吗？')) return
+  if (!window.confirm('确认删除该内容？')) return
   try {
     const res = await deletePost(postId)
     if (res.code === 200) {
       posts.value = posts.value.filter((item) => item.id !== postId)
       showToast('删除成功')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
@@ -273,7 +281,7 @@ const loadComments = async (post) => {
       post.comments = normalizeComments(res.data)
     }
   } catch {
-    showToast('评论加载失败', 'error')
+    showToast('评论加载失败，请稍后重试', 'error')
   } finally {
     post.commentsLoading = false
   }
@@ -281,7 +289,7 @@ const loadComments = async (post) => {
 
 const submitComment = async (post) => {
   if (!post.newComment.trim()) {
-    showToast('评论不能为空', 'error')
+    showToast('请输入评论内容', 'error')
     return
   }
   try {
@@ -294,12 +302,12 @@ const submitComment = async (post) => {
       })
       post.commentCount = (post.commentCount || 0) + 1
       post.newComment = ''
-      showToast('评论成功')
+      showToast('评论发布成功')
     } else {
-      showToast(res.message || '评论失败', 'error')
+      showToast(res.message || '评论发布失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('评论失败', 'error')
+    showToast('评论发布失败，请稍后重试', 'error')
   }
 }
 
@@ -311,16 +319,16 @@ const removeComment = async ({ post, commentId }) => {
       post.commentCount = Math.max(0, (post.commentCount || 0) - 1)
       showToast('评论已删除')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
 const toggleCommentLike = async ({ post, comment }) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -333,7 +341,7 @@ const toggleCommentLike = async ({ post, comment }) => {
       }
     }
   } catch {
-    showToast('评论点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
@@ -403,12 +411,19 @@ onBeforeUnmount(() => {
   border-radius: 16px;
   background: var(--paper);
   padding: 14px;
+  box-shadow: 0 10px 24px color-mix(in srgb, #0f172a 8%, transparent);
 }
 
 .switcher {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  position: sticky;
+  top: calc(var(--rail-sticky-top) - 8px);
+  z-index: 12;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px color-mix(in srgb, #0f172a 7%, transparent);
 }
 
 .guest-hero {
@@ -453,6 +468,11 @@ onBeforeUnmount(() => {
   font-weight: 700;
   padding: 8px 13px;
   border: 1px solid var(--line);
+  transition: transform 0.16s ease, border-color 0.16s ease, filter 0.16s ease;
+}
+
+.hero-btn:hover {
+  transform: translateY(-1px);
 }
 
 .hero-btn.solid {
@@ -479,6 +499,12 @@ onBeforeUnmount(() => {
   padding: 10px;
   display: grid;
   gap: 4px;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.highlight-item:hover {
+  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .highlight-item strong {
@@ -499,6 +525,13 @@ onBeforeUnmount(() => {
   color: var(--ink);
   cursor: pointer;
   font-weight: 700;
+  transition: transform 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.switch-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--line) 66%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 70%, var(--line));
 }
 
 .switch-btn:disabled {
@@ -544,6 +577,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 860px) {
+  .switcher {
+    top: 8px;
+  }
+
   .guest-hero {
     grid-template-columns: 1fr;
   }

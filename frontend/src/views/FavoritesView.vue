@@ -2,11 +2,11 @@
   <section class="favorites-page">
     <article class="panel heading">
       <h2>我的收藏</h2>
-      <p>查看你标记的帖子</p>
+      <p>查看已收藏的帖子</p>
     </article>
 
-    <article class="panel" v-if="loading">加载中...</article>
-    <article class="panel" v-else-if="posts.length === 0">暂无收藏内容</article>
+    <article class="panel" v-if="loading && !hasLoadedOnce && posts.length === 0">收藏加载中</article>
+    <article class="panel" v-else-if="!loading && hasLoadedOnce && posts.length === 0">暂无收藏内容</article>
 
     <PostCard
       v-else
@@ -58,6 +58,7 @@ const page = ref(1)
 const size = 10
 const hasMore = ref(false)
 const loading = ref(false)
+const hasLoadedOnce = ref(false)
 const loadMoreRef = ref(null)
 const currentUserId = computed(() => user.value?.id)
 let observer = null
@@ -66,7 +67,9 @@ let latestRequestId = 0
 const load = async (reset = true) => {
   if (reset) {
     page.value = 1
-    posts.value = []
+    if (!hasLoadedOnce.value) {
+      posts.value = []
+    }
   }
   loading.value = true
   const requestId = ++latestRequestId
@@ -79,12 +82,14 @@ const load = async (reset = true) => {
       const data = normalizePostList(res.data).map((item) => ({ ...item, favorited: true }))
       posts.value = reset ? data : posts.value.concat(data)
       hasMore.value = data.length === size
+      hasLoadedOnce.value = true
     } else {
       posts.value = []
       hasMore.value = false
+      hasLoadedOnce.value = true
     }
   } catch {
-    showToast('加载收藏失败', 'error')
+    showToast('收藏加载失败，请稍后重试', 'error')
   } finally {
     loading.value = false
   }
@@ -100,7 +105,7 @@ const loadMore = async () => {
 
 const togglePostFavorite = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后收藏', 'error')
     return
   }
   try {
@@ -113,13 +118,13 @@ const togglePostFavorite = async (post) => {
       showToast(post.favorited ? '已收藏' : '已取消收藏')
     }
   } catch {
-    showToast('收藏操作失败', 'error')
+    showToast('收藏失败，请稍后重试', 'error')
   }
 }
 
 const togglePostLike = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -129,13 +134,13 @@ const togglePostLike = async (post) => {
       post.likeCount = Math.max(0, (post.likeCount || 0) + (post.liked ? 1 : -1))
     }
   } catch {
-    showToast('点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
 const togglePostFollow = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后关注用户', 'error')
     return
   }
   try {
@@ -144,42 +149,43 @@ const togglePostFollow = async (post) => {
       post.followed = !!res.data.followed
     }
   } catch {
-    showToast('关注操作失败', 'error')
+    showToast('关注失败，请稍后重试', 'error')
   }
 }
 
 const repost = async (post) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后转发', 'error')
     return
   }
-  const content = window.prompt('请输入转发语（可选）')
+  const content = window.prompt('请输入转发内容（可选）')
   if (content === null) return
   try {
     const res = await createPost({ content, repostId: post.id })
     if (res.code === 200) {
       post.repostCount = (post.repostCount || 0) + 1
+      post.reposted = true
       showToast('转发成功')
     } else {
-      showToast(res.message || '转发失败', 'error')
+      showToast(res.message || '转发失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('转发失败', 'error')
+    showToast('转发失败，请稍后重试', 'error')
   }
 }
 
 const removePost = async (postId) => {
-  if (!window.confirm('确定删除这条动态吗？')) return
+  if (!window.confirm('确认删除该内容？')) return
   try {
     const res = await deletePost(postId)
     if (res.code === 200) {
       posts.value = posts.value.filter((item) => item.id !== postId)
       showToast('删除成功')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
@@ -198,7 +204,7 @@ const loadComments = async (post) => {
       post.comments = normalizeComments(res.data)
     }
   } catch {
-    showToast('评论加载失败', 'error')
+    showToast('评论加载失败，请稍后重试', 'error')
   } finally {
     post.commentsLoading = false
   }
@@ -206,7 +212,7 @@ const loadComments = async (post) => {
 
 const submitComment = async (post) => {
   if (!post.newComment.trim()) {
-    showToast('评论不能为空', 'error')
+    showToast('请输入评论内容', 'error')
     return
   }
   try {
@@ -219,12 +225,12 @@ const submitComment = async (post) => {
       })
       post.commentCount = (post.commentCount || 0) + 1
       post.newComment = ''
-      showToast('评论成功')
+      showToast('评论发布成功')
     } else {
-      showToast(res.message || '评论失败', 'error')
+      showToast(res.message || '评论发布失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('评论失败', 'error')
+    showToast('评论发布失败，请稍后重试', 'error')
   }
 }
 
@@ -236,16 +242,16 @@ const removeComment = async ({ post, commentId }) => {
       post.commentCount = Math.max(0, (post.commentCount || 0) - 1)
       showToast('评论已删除')
     } else {
-      showToast(res.message || '删除失败', 'error')
+      showToast(res.message || '删除失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('删除失败', 'error')
+    showToast('删除失败，请稍后重试', 'error')
   }
 }
 
 const toggleCommentLike = async ({ post, comment }) => {
   if (!isLoggedIn.value) {
-    showToast('请先登录', 'error')
+    showToast('请登录后点赞', 'error')
     return
   }
   try {
@@ -258,7 +264,7 @@ const toggleCommentLike = async ({ post, comment }) => {
       }
     }
   } catch {
-    showToast('评论点赞失败', 'error')
+    showToast('点赞失败，请稍后重试', 'error')
   }
 }
 
@@ -291,7 +297,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .favorites-page {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
   max-width: 920px;
   margin: 0 auto;

@@ -12,6 +12,7 @@ public class UserVO {
     private String bio;
     private Integer followersCount;
     private Integer followingCount;
+    private Integer postCount;
     private Boolean followed;
     private java.time.LocalDateTime createdAt;
 
@@ -77,6 +78,14 @@ public class UserVO {
 
     public void setFollowingCount(Integer followingCount) {
         this.followingCount = followingCount;
+    }
+
+    public Integer getPostCount() {
+        return postCount;
+    }
+
+    public void setPostCount(Integer postCount) {
+        this.postCount = postCount;
     }
 
     public Boolean getFollowed() {

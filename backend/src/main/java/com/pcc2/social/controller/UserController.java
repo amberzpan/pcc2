@@ -2,6 +2,7 @@ package com.pcc2.social.controller;
 
 import com.pcc2.social.common.Result;
 import com.pcc2.social.dto.ChangePasswordRequest;
+import com.pcc2.social.dto.ForgotPasswordRequest;
 import com.pcc2.social.dto.LoginRequest;
 import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
@@ -52,6 +53,23 @@ public class UserController {
             return Result.success(response);
         } catch (RuntimeException e) {
             return Result.error(isBlank(e.getMessage()) ? "登录失败" : e.getMessage());
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public Result<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        String validateMessage = userService.validateForgotPasswordRequest(request);
+        if (validateMessage != null) {
+            return Result.error(validateMessage);
+        }
+        if (containsSensitiveChars(request.getNewPassword())) {
+            return Result.error("密码包含非法字符");
+        }
+        try {
+            userService.resetPassword(request);
+            return Result.success();
+        } catch (RuntimeException e) {
+            return Result.error(isBlank(e.getMessage()) ? "重置失败" : e.getMessage());
         }
     }
     

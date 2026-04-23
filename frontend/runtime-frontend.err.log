@@ -1,1 +1,260 @@
-^C
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":true,"favorited":false,"followed":true,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=42 post= {"id":42,"userId":2,"content":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","mediaUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","mediaType":"image","repostId":null,"originalContent":null,"likeCount":2,"commentCount":2,"repostCount":1,"allScore":0.275,"hotScore":null,"createdAt":"2026-04-22T22:39:23","updatedAt":"2026-04-23T12:30:15","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/images/66fd4240-02e4-4e7f-afbd-26f8d2457310.png","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "videoState" was accessed during render but is not defined on instance. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=43 post= {"id":43,"userId":2,"content":"。。","mediaUrl":null,"mediaType":null,"repostId":42,"originalContent":"今晚我要十一点睡觉，黄盼要是打扰我睡觉我就打死你👌👌😴🤗🤗🤗","likeCount":1,"commentCount":2,"repostCount":0,"allScore":0.15625,"hotScore":null,"createdAt":"2026-04-22T22:40:40","updatedAt":"2026-04-22T22:42:56","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":null,"reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Play
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Pause
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: VolumeX
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Volume2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Maximize2
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve component: Smile
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "videoState" was accessed during render but is not defined on instance. 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of render function 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":false,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=undefined  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mTypeError: Cannot read properties of undefined (reading 'paused')
+    at Proxy._sfc_render (http://localhost:5173/src/components/PostCard.vue?t=1776919609262:281:49)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:4697:35)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:5588:22)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:409:16)
+    at http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2098:43
+    at Array.forEach (<anonymous>)
+    at rerender (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2091:24)
+    at Object.rerender (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2148:11)
+    at http://localhost:5173/src/components/PostCard.vue:419:25
+    at http://localhost:5173/@vite/client:61:95
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[HMR] Something went wrong during Vue component hot-reload. Full reload required.
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of render function 
+  at <PostCard key=41 post= {"id":41,"userId":2,"content":"","mediaUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","mediaType":"video","repostId":null,"originalContent":null,"likeCount":1,"commentCount":1,"repostCount":0,"allScore":0.0667339968183143,"hotScore":null,"createdAt":"2026-04-22T17:01:55","updatedAt":"2026-04-22T22:46:55","username":"aaa","nickname":"黄盼","avatar":"/images/40e65704-0860-4a3b-a277-0ff6dcf10ff2.png","liked":false,"favorited":false,"followed":true,"imageUrl":"/videos/3af038b5-6ef5-4430-86b2-e2b1e4c79d10.mp4","reposted":false,"showComments":false,"comments":[],"commentsLoading":false,"commentSort":"time_desc","newComment":""} current-user-id=35  ... > 
+  at <HomeView onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <RouterView> 
+  at <App>
+[2m12:46:49[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mTypeError: Cannot read properties of undefined (reading 'paused')
+    at Proxy._sfc_render (http://localhost:5173/src/components/PostCard.vue?t=1776919609262:281:49)
+    at renderComponentRoot (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:4697:35)
+    at ReactiveEffect.componentUpdateFn [as fn] (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:5588:22)
+    at ReactiveEffect.run (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:409:16)
+    at http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2098:43
+    at Array.forEach (<anonymous>)
+    at rerender (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2091:24)
+    at Object.rerender (http://localhost:5173/node_modules/.vite/deps/vue.runtime.esm-bundler-CJdF6Oq_.js?v=8a7db859:2148:11)
+    at http://localhost:5173/src/components/PostCard.vue:419:25
+    at http://localhost:5173/@vite/client:61:95
+[2m12:46:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[HMR] Something went wrong during Vue component hot-reload. Full reload required.

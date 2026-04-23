@@ -1,0 +1,14 @@
+# Dependencies
+frontend/node_modules/
+
+# Build artifacts
+frontend/dist/
+backend/target/
+
+# Runtime logs
+frontend/*.log
+frontend/*.out.log
+frontend/*.err.log
+backend/*.log
+backend/*.out.log
+backend/*.err.log

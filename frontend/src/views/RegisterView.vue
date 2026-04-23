@@ -2,40 +2,51 @@
   <section class="auth-page">
     <article class="card">
       <form class="auth-form" @submit.prevent="submit">
-      <h2>创建账号</h2>
-      <p class="tip">加入社区，分享你的动态</p>
+        <header class="auth-head">
+          <p class="eyebrow">SimpleSocial</p>
+          <h2>创建账号</h2>
+          <p class="tip">注册后可发布动态并参与互动</p>
+        </header>
 
-      <label>用户名</label>
-      <input
-        v-model="form.username"
-        placeholder="3-20 位字符"
-        autocomplete="username"
-        autocapitalize="none"
-        spellcheck="false"
-      />
+        <label class="field">
+          <span>用户名</span>
+          <input
+            v-model="form.username"
+            placeholder="3-20 位字符"
+            autocomplete="username"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+        </label>
 
-      <label>昵称</label>
-      <input v-model="form.nickname" placeholder="可选，不填则用用户名" />
+        <label class="field">
+          <span>昵称</span>
+          <input v-model="form.nickname" placeholder="可选，不填则使用用户名" />
+        </label>
 
-      <label>密码</label>
-      <input
-        v-model="form.password"
-        type="password"
-        placeholder="8-24 位，需包含字母和数字"
-        autocomplete="new-password"
-      />
+        <label class="field">
+          <span>密码</span>
+          <input
+            v-model="form.password"
+            type="password"
+            placeholder="8-24 位，需包含字母和数字"
+            autocomplete="new-password"
+          />
+        </label>
 
-      <label>确认密码</label>
-      <input
-        v-model="form.confirmPassword"
-        type="password"
-        placeholder="再次输入密码"
-        autocomplete="new-password"
-      />
+        <label class="field">
+          <span>确认密码</span>
+          <input
+            v-model="form.confirmPassword"
+            type="password"
+            placeholder="再输一次"
+            autocomplete="new-password"
+          />
+        </label>
 
-      <button class="btn" type="submit" :disabled="loading">{{ loading ? '注册中...' : '注册并登录' }}</button>
+        <button class="btn" type="submit" :disabled="loading">{{ loading ? '正在创建' : '注册并登录' }}</button>
 
-      <p class="tip">已有账号？<router-link to="/login">去登录</router-link></p>
+        <p class="tip foot-tip">已有账号？<router-link to="/login">去登录</router-link></p>
       </form>
     </article>
   </section>
@@ -89,10 +100,10 @@ const submit = async () => {
       showToast('注册成功')
       router.push('/')
     } else {
-      showToast(res.message || '注册失败', 'error')
+      showToast(res.message || '注册失败，请稍后重试', 'error')
     }
   } catch {
-    showToast('注册失败', 'error')
+    showToast('注册失败，请稍后重试', 'error')
   } finally {
     loading.value = false
   }
@@ -109,17 +120,31 @@ const submit = async () => {
 }
 
 .card {
-  width: min(760px, 100%);
+  width: min(920px, 100%);
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--paper);
-  padding: 24px;
-  box-shadow: 0 18px 40px color-mix(in srgb, var(--line) 35%, transparent);
+  padding: 32px;
+  box-shadow: 0 20px 42px color-mix(in srgb, #0f172a 10%, transparent);
 }
 
 .auth-form {
   display: grid;
-  gap: 2px;
+  gap: 10px;
+}
+
+.auth-head {
+  display: grid;
+  gap: 4px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 h2 {
@@ -127,28 +152,40 @@ h2 {
 }
 
 .tip {
+  margin: 0;
   color: var(--muted);
 }
 
-label {
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 4px;
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
   font-weight: 700;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 input {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font: inherit;
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 92%, var(--paper));
   color: var(--ink);
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, #1d9bf0 45%, var(--line));
+  background: var(--surface);
 }
 
 .btn {
-  margin-top: 12px;
+  margin-top: 8px;
   width: 100%;
   border: 0;
   border-radius: 999px;
@@ -157,10 +194,26 @@ input {
   color: var(--paper);
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
 .btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.foot-tip {
+  margin-top: 2px;
+}
+
+.foot-tip a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
 }
 </style>

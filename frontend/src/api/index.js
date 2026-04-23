@@ -24,7 +24,17 @@ request.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.dispatchEvent(new Event('auth:expired'))
+      const authPages = ['/login', '/register']
+      const publicPages = ['/', '/search']
+      const currentPath = window.location.pathname
+      const isPublicPage = authPages.includes(currentPath)
+        || publicPages.includes(currentPath)
+        || currentPath.startsWith('/post/')
+        || currentPath.startsWith('/profile/')
+      if (!isPublicPage) {
+        window.location.replace('/login')
+      }
     }
     return Promise.reject(error)
   }
@@ -32,6 +42,7 @@ request.interceptors.response.use(
 
 export const login = (data) => request.post('/user/login', data)
 export const register = (data) => request.post('/user/register', data)
+export const forgotPassword = (data) => request.post('/user/forgot-password', data)
 export const getUserInfo = () => request.get('/user/info')
 export const getUserProfile = (userId) => request.get(`/user/${userId}/profile`)
 export const updateUserInfo = (data) => request.put('/user/info', data)

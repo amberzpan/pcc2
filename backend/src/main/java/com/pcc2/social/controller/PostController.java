@@ -69,9 +69,6 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
-            return Result.error(401, "未登录");
-        }
         return Result.success(postService.getHotPosts(page, size, userId));
     }
 

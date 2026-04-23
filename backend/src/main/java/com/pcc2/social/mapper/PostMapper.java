@@ -13,6 +13,7 @@ public interface PostMapper {
     List<Post> findHot(@Param("offset") int offset, @Param("limit") int limit);
     List<Post> search(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
     Post findById(Long id);
+    int countByUserId(@Param("userId") Long userId);
     int insert(Post post);
     int delete(Long id);
     int updateLikeCount(@Param("id") Long id, @Param("count") Integer count);

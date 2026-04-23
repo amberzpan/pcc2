@@ -4,6 +4,7 @@ import com.pcc2.social.dto.LoginResponse;
 import com.pcc2.social.dto.RegisterRequest;
 import com.pcc2.social.entity.User;
 import com.pcc2.social.mapper.FollowMapper;
+import com.pcc2.social.mapper.PostMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ class UserServiceTest {
 
     @Mock
     private FollowMapper followMapper;
+
+    @Mock
+    private PostMapper postMapper;
 
     @Mock
     private UserSchemaCompatibilityService schemaCompatibilityService;

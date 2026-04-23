@@ -81,12 +81,12 @@ describe('layout flags', () => {
     })
   })
 
-  it('should keep sidebar fixed layout scaffold in app shell', () => {
+  it('should keep sidebar sticky two-column layout scaffold in app shell', () => {
     const content = readApp()
 
     assert.match(content, /'with-sidebar':\s*layoutFlags\.value\.showSidebar/)
     assert.match(content, /\.layout\.with-sidebar/)
-    assert.match(content, /\.sidebar\s*\{[\s\S]*position:\s*fixed/)
-    assert.match(content, /\.layout\.with-sidebar \.page\s*\{[\s\S]*margin-left:/)
+    assert.match(content, /\.layout\.with-sidebar\s*\{[\s\S]*grid-template-columns:\s*248px minmax\(0,\s*1fr\)/)
+    assert.match(content, /\.sidebar\s*\{[\s\S]*position:\s*sticky/)
   })
 })
