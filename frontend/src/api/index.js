@@ -54,6 +54,7 @@ export const getPost = (id) => request.get(`/post/${id}`)
 export const searchPosts = (keyword, page = 1, size = 10) => request.get('/post/search', { params: { keyword, page, size } })
 export const getFollowingPosts = (page = 1, size = 10) => request.get('/post/following', { params: { page, size } })
 export const getHotPosts = (page = 1, size = 10) => request.get('/post/hot', { params: { page, size } })
+export const getTodayHotPosts = (page = 1, size = 10) => request.get('/post/today-hot', { params: { page, size } })
 export const createPost = (data) => request.post('/post', data)
 export const deletePost = (id) => request.delete(`/post/${id}`)
 export const uploadImage = (file) => {

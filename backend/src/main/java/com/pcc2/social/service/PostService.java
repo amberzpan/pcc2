@@ -9,6 +9,9 @@ import com.pcc2.social.mapper.PostMapper;
 import com.pcc2.social.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -18,7 +21,7 @@ public class PostService {
     private final UserMapper userMapper;
     private final FollowMapper followMapper;
     private final FavoriteMapper favoriteMapper;
-    
+
     public PostService(PostMapper postMapper,
                        LikeRecordMapper likeRecordMapper,
                        UserMapper userMapper,
@@ -30,7 +33,7 @@ public class PostService {
         this.followMapper = followMapper;
         this.favoriteMapper = favoriteMapper;
     }
-    
+
     public List<Post> getPostList(int page, int size, Long currentUserId) {
         int safePage = Math.max(page, 1);
         int safeSize = Math.min(Math.max(size, 1), 50);
@@ -47,7 +50,7 @@ public class PostService {
         }
         return posts;
     }
-    
+
     public List<Post> getUserPosts(Long userId, int page, int size, Long currentUserId) {
         int safePage = Math.max(page, 1);
         int safeSize = Math.min(Math.max(size, 1), 50);
@@ -89,9 +92,18 @@ public class PostService {
         return posts;
     }
 
+    public List<Post> getTodayHotPosts(int page, int size, Long currentUserId) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int offset = (safePage - 1) * safeSize;
+        List<Post> posts = postMapper.findTodayHot(offset, safeSize);
+        hydratePostStatus(posts, currentUserId);
+        return posts;
+    }
+
     public List<Post> searchPosts(String keyword, int page, int size, Long currentUserId) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
         int safePage = Math.max(page, 1);
         int safeSize = Math.min(Math.max(size, 1), 50);
@@ -108,7 +120,7 @@ public class PostService {
         }
         return posts;
     }
-    
+
     public Post getPostById(Long id, Long currentUserId) {
         Post post = postMapper.findById(id);
         if (post != null && currentUserId != null) {
@@ -120,7 +132,7 @@ public class PostService {
         }
         return post;
     }
-    
+
     @Transactional
     public Post createPost(Long userId, PostRequest request) {
         if (request == null) {
@@ -128,7 +140,8 @@ public class PostService {
         }
 
         boolean hasText = request.getContent() != null && !request.getContent().trim().isEmpty();
-        boolean hasMedia = request.getMediaUrl() != null && !request.getMediaUrl().trim().isEmpty();
+        String resolvedMediaUrl = resolveMediaUrl(request);
+        boolean hasMedia = resolvedMediaUrl != null && !resolvedMediaUrl.isEmpty();
         boolean isRepost = request.getRepostId() != null;
         if (!hasText && !hasMedia && !isRepost) {
             throw new RuntimeException("内容不能为空");
@@ -137,13 +150,9 @@ public class PostService {
         Post post = new Post();
         post.setUserId(userId);
         post.setContent(request.getContent() == null ? "" : request.getContent().trim());
-        if (request.getMediaUrl() != null && !request.getMediaUrl().trim().isEmpty()) {
-            post.setMediaUrl(request.getMediaUrl());
-        } else {
-            post.setMediaUrl(request.getImageUrl());
-        }
-        post.setMediaType(request.getMediaType());
-        
+        post.setMediaUrl(resolvedMediaUrl);
+        post.setMediaType(resolveMediaType(request));
+
         if (request.getRepostId() != null) {
             Post originalPost = postMapper.findById(request.getRepostId());
             if (originalPost != null) {
@@ -155,16 +164,16 @@ public class PostService {
                 postMapper.updateRepostCount(request.getRepostId(), originalPost.getRepostCount() + 1);
             }
         }
-        
+
         post.setLikeCount(0);
         post.setCommentCount(0);
         post.setRepostCount(0);
-        
+
         postMapper.insert(post);
-        
+
         return postMapper.findById(post.getId());
     }
-    
+
     @Transactional
     public boolean deletePost(Long id, Long userId) {
         Post post = postMapper.findById(id);
@@ -177,11 +186,11 @@ public class PostService {
         postMapper.delete(id);
         return true;
     }
-    
+
     public void updateLikeCount(Long postId, int count) {
         postMapper.updateLikeCount(postId, count);
     }
-    
+
     public void updateCommentCount(Long postId, int count) {
         postMapper.updateCommentCount(postId, count);
     }
@@ -204,5 +213,66 @@ public class PostService {
                 post.setFollowed(false);
             }
         }
+    }
+
+    private String resolveMediaType(PostRequest request) {
+        if (request.getMediaType() != null && !request.getMediaType().trim().isEmpty()) {
+            return request.getMediaType().trim();
+        }
+        return cleanMediaUrls(request.getMediaUrls()).isEmpty() ? null : "image";
+    }
+
+    private String resolveMediaUrl(PostRequest request) {
+        List<String> mediaUrls = cleanMediaUrls(request.getMediaUrls());
+        if (!mediaUrls.isEmpty()) {
+            if (mediaUrls.size() == 1) {
+                return mediaUrls.get(0);
+            }
+            return toJsonArray(mediaUrls);
+        }
+
+        if (request.getMediaUrl() != null && !request.getMediaUrl().trim().isEmpty()) {
+            return request.getMediaUrl().trim();
+        }
+
+        if (request.getImageUrl() != null && !request.getImageUrl().trim().isEmpty()) {
+            return request.getImageUrl().trim();
+        }
+
+        return null;
+    }
+
+    private List<String> cleanMediaUrls(List<String> mediaUrls) {
+        List<String> cleaned = new ArrayList<>();
+        if (mediaUrls == null) {
+            return cleaned;
+        }
+
+        for (String mediaUrl : mediaUrls) {
+            if (mediaUrl == null || mediaUrl.trim().isEmpty()) {
+                continue;
+            }
+            if (cleaned.size() >= 9) {
+                throw new RuntimeException("单条动态最多支持 9 张图片");
+            }
+            cleaned.add(mediaUrl.trim());
+        }
+        return cleaned;
+    }
+
+    private String toJsonArray(List<String> mediaUrls) {
+        StringBuilder builder = new StringBuilder("[");
+        for (int i = 0; i < mediaUrls.size(); i++) {
+            if (i > 0) {
+                builder.append(',');
+            }
+            builder.append('"').append(escapeJson(mediaUrls.get(i))).append('"');
+        }
+        builder.append(']');
+        return builder.toString();
+    }
+
+    private String escapeJson(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

@@ -80,12 +80,20 @@ class PostControllerSearchTest {
     }
 
     @Test
-    void hotShouldRejectAnonymousVisitor() {
+    void todayHotShouldUseServiceAndReturnSuccess() {
+        List<Post> posts = new ArrayList<>();
+        Post post = new Post();
+        post.setId(4L);
+        posts.add(post);
+
         MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("userId", 8L);
+        when(postService.getTodayHotPosts(1, 10, 8L)).thenReturn(posts);
 
-        var result = postController.getHotPosts(1, 10, request);
+        var result = postController.getTodayHotPosts(1, 10, request);
 
-        assertEquals(401, result.getCode());
+        assertEquals(200, result.getCode());
+        verify(postService).getTodayHotPosts(1, 10, 8L);
     }
 
     @Test

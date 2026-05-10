@@ -1465,37 +1465,70 @@ textarea:focus {
 }
 
 @media (max-width: 840px) {
+  .profile-page {
+    gap: 12px;
+  }
+
+  .panel {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .hero {
+    padding: 0;
+  }
+
+  .cover {
+    height: 124px;
+  }
+
   .profile-main {
-    grid-template-columns: 1fr;
-    text-align: center;
-    margin-top: 0;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: end;
+    gap: 12px;
+    padding: 0 12px 12px;
+    margin-top: -22px;
+    text-align: left;
   }
 
   .avatar-wrap {
-    margin: -20px auto 0;
+    margin: 0;
+    width: 76px;
+    height: 76px;
   }
 
   .avatar {
-    margin: 0 auto;
+    width: 76px;
+    height: 76px;
+    margin: 0;
   }
 
   .hero-actions {
-    justify-content: center;
+    grid-column: 2;
+    justify-content: flex-start;
     margin-left: 0;
-  }
-
-  .stats-row {
-    justify-content: center;
+    margin-top: 2px;
   }
 
   .identity {
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .stats-row {
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .relation-modal,
+  .image-preview-card,
+  .image-editor-card {
+    width: min(100vw - 20px, 720px);
   }
 }
 </style>

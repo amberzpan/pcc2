@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,6 +68,32 @@ class PostServiceTest {
     }
 
     @Test
+    void createPostShouldPersistMultipleImagesIntoMediaUrlJson() {
+        Long userId = 1L;
+        PostRequest request = new PostRequest();
+        request.setContent("hello");
+        request.setMediaType("image");
+        request.setMediaUrls(java.util.List.of("/images/a.png", "/images/b.png"));
+
+        Post created = new Post();
+        created.setId(101L);
+
+        when(postMapper.findById(101L)).thenReturn(created);
+        when(postMapper.insert(any(Post.class))).thenAnswer(invocation -> {
+            Post arg = invocation.getArgument(0);
+            arg.setId(101L);
+            return 1;
+        });
+
+        postService.createPost(userId, request);
+
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        org.mockito.Mockito.verify(postMapper).insert(captor.capture());
+        assertEquals("[\"/images/a.png\",\"/images/b.png\"]", captor.getValue().getMediaUrl());
+        assertEquals("image", captor.getValue().getMediaType());
+    }
+
+    @Test
     void getHotPostsShouldMarkStatusAsFalseWhenAnonymous() {
         Post post = new Post();
         post.setId(20L);
@@ -81,6 +106,20 @@ class PostServiceTest {
         assertFalse(result.get(0).getLiked());
         assertFalse(result.get(0).getFavorited());
         assertFalse(result.get(0).getFollowed());
+    }
+
+    @Test
+    void getTodayHotPostsShouldUseTodayHotMapperAndClampPageSize() {
+        Post post = new Post();
+        post.setId(21L);
+        post.setUserId(6L);
+        when(postMapper.findTodayHot(0, 50)).thenReturn(java.util.List.of(post));
+
+        java.util.List<Post> result = postService.getTodayHotPosts(0, 60, null);
+
+        assertEquals(1, result.size());
+        org.mockito.Mockito.verify(postMapper).findTodayHot(0, 50);
+        org.mockito.Mockito.verify(postMapper, org.mockito.Mockito.never()).findHot(anyInt(), anyInt());
     }
 
     @Test

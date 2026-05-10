@@ -3,8 +3,8 @@
 <mapper namespace="com.pcc2.social.mapper.PostMapper">
     <select id="findAll" resultType="com.pcc2.social.entity.Post">
         SELECT p.*, u.username, u.nickname, u.avatar,
-               ((p.like_count * 1.0 + p.comment_count * 2.0 + p.repost_count * 2.8)
-                 / POW(TIMESTAMPDIFF(HOUR, p.created_at, NOW()) + 2, 1.25)) AS all_score
+               ((1.5 + LN(1 + (p.like_count * 1.0 + p.comment_count * 2.0 + p.repost_count * 2.8)))
+                 / POW(TIMESTAMPDIFF(HOUR, p.created_at, NOW()) + 2, 1.8)) AS all_score
         FROM post p
         LEFT JOIN user u ON p.user_id = u.id
         ORDER BY all_score DESC, p.created_at DESC
@@ -32,9 +32,22 @@
 
     <select id="findHot" resultType="com.pcc2.social.entity.Post">
         SELECT p.*, u.username, u.nickname, u.avatar,
-               (p.like_count * 1.2 + p.comment_count * 2.4 + p.repost_count * 3.0) AS hot_score
+               (LN(1 + (p.like_count * 1.2 + p.comment_count * 2.4 + p.repost_count * 3.0))
+                 / POW(TIMESTAMPDIFF(HOUR, p.created_at, NOW()) + 2, 1.2)) AS hot_score
         FROM post p
         LEFT JOIN user u ON p.user_id = u.id
+        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY hot_score DESC, p.created_at DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="findTodayHot" resultType="com.pcc2.social.entity.Post">
+        SELECT p.*, u.username, u.nickname, u.avatar,
+               (LN(1 + (p.like_count * 1.2 + p.comment_count * 2.4 + p.repost_count * 3.0))
+                 / POW(TIMESTAMPDIFF(HOUR, p.created_at, NOW()) + 2, 1.2)) AS hot_score
+        FROM post p
+        LEFT JOIN user u ON p.user_id = u.id
+        WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)
         ORDER BY hot_score DESC, p.created_at DESC
         LIMIT #{offset}, #{limit}
     </select>

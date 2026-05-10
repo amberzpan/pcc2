@@ -1,11 +1,14 @@
 package com.pcc2.social.dto;
 
+import java.util.List;
+
 public class PostRequest {
     private String content;
     private String imageUrl;
     private Long repostId;
     private String mediaUrl;
     private String mediaType;
+    private List<String> mediaUrls;
 
     public String getContent() {
         return content;
@@ -45,5 +48,13 @@ public class PostRequest {
 
     public void setMediaType(String mediaType) {
         this.mediaType = mediaType;
+    }
+
+    public List<String> getMediaUrls() {
+        return mediaUrls;
+    }
+
+    public void setMediaUrls(List<String> mediaUrls) {
+        this.mediaUrls = mediaUrls;
     }
 }

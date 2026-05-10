@@ -19,7 +19,7 @@
             <button v-if="showFollow" class="head-follow" @click.stop="$emit('toggle-follow', post)">
               {{ post.followed ? '已关注' : '关注' }}
             </button>
-            <div v-if="canDelete" class="post-menu" @mouseleave="showPostMenu = false">
+            <div v-if="canDelete" class="post-menu">
               <button class="more-btn" type="button" title="更多" aria-label="更多操作" @click.stop="showPostMenu = !showPostMenu">
                 <MoreHorizontal :size="17" />
               </button>
@@ -35,9 +35,20 @@
 
         <p v-if="post.content" class="post-content allow-selection">{{ post.content }}</p>
 
-        <div v-if="post.mediaUrl && post.mediaType === 'image'" class="media-wrap">
-          <button class="media-open-surface" type="button" aria-label="预览图片" @click="openMediaPreview('image', post.mediaUrl)">
-            <img class="media media-image" :src="post.mediaUrl" alt="post media" />
+        <div
+          v-if="post.mediaType === 'image' && visibleImageUrls.length"
+          class="media-wrap media-gallery-wrap"
+          :class="mediaGalleryClass"
+        >
+          <button
+            v-for="(imageUrl, imageIndex) in visibleImageUrls"
+            :key="`${post.id || 'post'}-${imageIndex}-${imageUrl}`"
+            class="media-open-surface"
+            type="button"
+            aria-label="预览图片"
+            @click="openMediaPreview('image', imageUrl)"
+          >
+            <img class="media media-image" :src="imageUrl" alt="post media" />
           </button>
         </div>
         <div v-if="post.mediaUrl && post.mediaType === 'video'" class="media-wrap">
@@ -215,6 +226,7 @@ import {
 } from 'lucide-vue-next'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { normalizeMediaUrls } from '@/utils/post-utils'
 
 const props = defineProps({
   post: {
@@ -249,6 +261,24 @@ const defaultAvatar = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg
 const canDelete = computed(() => props.currentUserId && props.post.userId === props.currentUserId)
 const showFollow = computed(() => props.currentUserId && props.post.userId !== props.currentUserId)
 const router = useRouter()
+const mediaImageUrls = computed(() => normalizeMediaUrls(props.post.mediaUrls?.length ? props.post.mediaUrls : props.post.mediaUrl))
+const visibleImageUrls = computed(() => mediaImageUrls.value.slice(0, 9))
+const mediaGalleryClass = computed(() => {
+  const count = visibleImageUrls.value.length
+  if (count <= 1) {
+    return 'media-count-1'
+  }
+  if (count === 2) {
+    return 'media-count-2'
+  }
+  if (count === 3) {
+    return 'media-count-3'
+  }
+  if (count === 4) {
+    return 'media-count-4'
+  }
+  return 'media-count-many'
+})
 const mediaPreview = ref({
   show: false,
   type: 'image',
@@ -402,6 +432,21 @@ const closeCommentStickersOnOutsidePointer = (event) => {
   showCommentStickers.value = false
 }
 
+const closePostMenuOnOutsidePointer = (event) => {
+  const root = postCardRef.value
+  const target = event.target
+  if (!(target instanceof Element) || !root) {
+    showPostMenu.value = false
+    return
+  }
+
+  const menu = root.querySelector('.post-menu')
+  if (menu?.contains(target)) {
+    return
+  }
+  showPostMenu.value = false
+}
+
 const submitCurrentComment = () => {
   showCommentStickers.value = false
   emit('submit-comment', props.post)
@@ -431,6 +476,11 @@ watch(showCommentStickers, (open) => {
   document[action]('pointerdown', closeCommentStickersOnOutsidePointer, true)
 })
 
+watch(showPostMenu, (open) => {
+  const action = open ? 'addEventListener' : 'removeEventListener'
+  document[action]('pointerdown', closePostMenuOnOutsidePointer, true)
+})
+
 watch(
   () => props.post.showComments,
   (open) => {
@@ -442,6 +492,7 @@ watch(
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', closeCommentStickersOnOutsidePointer, true)
+  document.removeEventListener('pointerdown', closePostMenuOnOutsidePointer, true)
 })
 
 const formatTime = (time) => {
@@ -569,11 +620,13 @@ const formatTime = (time) => {
 
 .post-menu {
   position: relative;
+  padding: 2px;
+  margin: -2px;
 }
 
 .more-btn {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -592,10 +645,10 @@ const formatTime = (time) => {
 
 .post-menu-popover {
   position: absolute;
-  top: 34px;
+  top: 40px;
   right: 0;
   z-index: 6;
-  min-width: 104px;
+  min-width: 128px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--paper);
@@ -603,19 +656,29 @@ const formatTime = (time) => {
   padding: 6px;
 }
 
+.post-menu-popover::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
 .delete-menu-item {
   width: 100%;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--error);
-  padding: 8px 9px;
+  min-height: 42px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 700;
   text-align: left;
 }
@@ -672,6 +735,73 @@ const formatTime = (time) => {
   background: transparent;
   max-height: min(68vh, 560px);
   overflow: hidden;
+}
+
+.media-gallery-wrap {
+  display: grid;
+  width: min(100%, 520px);
+  max-height: none;
+  gap: 2px;
+  background: transparent;
+}
+
+.media-gallery-wrap.media-count-1 {
+  display: inline-grid;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.media-gallery-wrap.media-count-2,
+.media-gallery-wrap.media-count-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.media-gallery-wrap.media-count-3 {
+  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.media-gallery-wrap.media-count-3 .media-open-surface:first-child {
+  grid-row: 1 / span 2;
+}
+
+.media-gallery-wrap.media-count-many {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.media-gallery-wrap .media-open-surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 148px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface) 88%, var(--paper));
+}
+
+.media-gallery-wrap.media-count-1 .media-open-surface {
+  min-height: auto;
+  width: fit-content;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+}
+
+.media-gallery-wrap .media-image {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+
+.media-gallery-wrap.media-count-1 .media-image {
+  width: auto;
+  height: auto;
+  max-width: min(100%, 520px);
+  max-height: min(68vh, 560px);
+  object-fit: contain;
 }
 
 .video-shell {
@@ -1096,6 +1226,10 @@ const formatTime = (time) => {
   .media-video {
     width: 100%;
     max-width: 100%;
+  }
+
+  .media-gallery-wrap {
+    width: 100%;
   }
 
   .video-time {

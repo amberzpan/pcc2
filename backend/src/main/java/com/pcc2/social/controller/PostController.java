@@ -72,6 +72,15 @@ public class PostController {
         return Result.success(postService.getHotPosts(page, size, userId));
     }
 
+    @GetMapping("/today-hot")
+    public Result<?> getTodayHotPosts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(postService.getTodayHotPosts(page, size, userId));
+    }
+
     @GetMapping("/user/{userId}")
     public Result<?> getUserPosts(
             @PathVariable Long userId,

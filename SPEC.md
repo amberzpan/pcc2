@@ -103,15 +103,27 @@
 
 首页排序：
 
-- 首页 `all` 使用互动热度和时间衰减综合排序。
-- 默认公式：`all_score = (like_count*1.0 + comment_count*2.0 + repost_count*2.8) / POW(age_hours + 2, 1.25)`。
+- 首页 `all` 以时效性为主，同时兼顾热度。
+- 推荐使用对数压缩后的互动热度并施加强时间衰减：
+  - `E = like_count*1.0 + comment_count*2.0 + repost_count*2.8`
+  - `H = LN(1 + E)`
+  - `home_score = (1.5 + H) / POW(age_hours + 2, 1.8)`
 - 同分时按 `created_at DESC` 排序。
 
 热度排序：
 
-- 热度 `hot` 使用互动强权重排序。
-- 默认公式：`hot_score = like_count*1.2 + comment_count*2.4 + repost_count*3.0`。
+- 热度 `hot` 以热度为主，同时考虑时效性，并使用 7 天窗口。
+- 推荐使用对数压缩后的互动热度并施加较弱时间衰减：
+  - 仅统计 `created_at >= NOW() - INTERVAL 7 DAY` 的帖子。
+  - `Ehot = like_count*1.2 + comment_count*2.4 + repost_count*3.0`
+  - `Hhot = LN(1 + Ehot)`
+  - `hot_score = Hhot / POW(age_hours + 2, 1.2)`
 - 今日热搜基于热门帖子生成，每条热搜必须保留具体 `postId`，点击进入 `/post/:id`。
+
+说明：
+
+- `age_hours = TIMESTAMPDIFF(HOUR, created_at, NOW())`。
+- 游客仅能使用首页模式浏览，但可以看到右侧栏的今日热搜；右侧栏热搜数据可通过 `GET /api/post/hot` 获取。
 
 推荐关注：
 

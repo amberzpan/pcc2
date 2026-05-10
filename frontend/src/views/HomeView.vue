@@ -577,12 +577,42 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 860px) {
+  .feed-page {
+    gap: 10px;
+  }
+
+  .panel {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
   .switcher {
-    top: 8px;
+    top: calc(var(--topbar-height) + 8px);
+    gap: 8px;
+    padding: 10px 12px;
   }
 
   .guest-hero {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hero-actions {
+    width: 100%;
+  }
+
+  .hero-btn {
+    flex: 1 1 0;
+    text-align: center;
+  }
+
+  .mode-intro {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .mode-badge {
+    justify-self: start;
   }
 }
 

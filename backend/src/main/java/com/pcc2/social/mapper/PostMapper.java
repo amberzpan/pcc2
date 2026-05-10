@@ -11,6 +11,7 @@ public interface PostMapper {
     List<Post> findByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
     List<Post> findByFollowing(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
     List<Post> findHot(@Param("offset") int offset, @Param("limit") int limit);
+    List<Post> findTodayHot(@Param("offset") int offset, @Param("limit") int limit);
     List<Post> search(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
     Post findById(Long id);
     int countByUserId(@Param("userId") Long userId);

@@ -117,10 +117,12 @@
           <button v-for="topic in hotTopics" :key="topic.key" class="trend-item" type="button" @click="openTrend(topic)">
             <span class="trend-rank">{{ topic.rank }}</span>
             <span class="trend-body">
-              <small v-if="topic.rank <= 3">热门 · {{ topic.heatLabel }}</small>
               <span class="trend-title">{{ topic.title }}</span>
             </span>
-            <span class="trend-chip" v-if="topic.rank <= 3">热</span>
+            <span class="trend-side">
+              <small class="trend-heat">{{ topic.heatLabel }}</small>
+              <span class="trend-chip" v-if="topic.rank <= 3">热</span>
+            </span>
           </button>
           <p class="rail-empty" v-if="!rightRailLoading && hotTopics.length === 0">暂无热搜</p>
         </section>
@@ -158,7 +160,7 @@
 import { Bookmark, CircleUserRound, Flame, House, Search, Settings, Sparkles, SquarePen, UsersRound } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getHotPosts, getPostList, getUserInfo, toggleFollow } from './api'
+import { getPostList, getTodayHotPosts, getUserInfo, toggleFollow } from './api'
 import { normalizeFeedMode, resolveAccessibleFeedMode } from './utils/home-mode'
 import { resolveLayoutFlags } from './utils/layout'
 import { getStoredTheme, setTheme as persistTheme } from './utils/theme'
@@ -173,6 +175,8 @@ const themeRef = ref(token.value ? getStoredTheme() : persistTheme('light'))
 const rightRailLoading = ref(false)
 const hotTopics = ref([])
 const suggestedUsers = ref([])
+const RIGHT_RAIL_TREND_LIMIT = 12
+const SUGGESTION_LIMIT = 5
 
 const isLoggedIn = computed(() => !!token.value)
 const layoutFlags = computed(() => resolveLayoutFlags(route.path, isLoggedIn.value))
@@ -315,7 +319,7 @@ const buildHotTopics = (posts) => {
     }))
     .filter((item) => item.postId && item.title)
     .sort((a, b) => b.heat - a.heat)
-    .slice(0, 12)
+    .slice(0, RIGHT_RAIL_TREND_LIMIT)
     .map((item, index) => ({
       ...item,
       rank: index + 1,
@@ -346,10 +350,10 @@ const buildSuggestedUsers = (posts) => {
     pool.set(userId, current)
   }
 
-  return Array.from(pool.values())
-    .filter((item) => !item.followed)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
+  const allUsers = Array.from(pool.values()).sort((a, b) => b.score - a.score)
+  const unfollowedUsers = allUsers.filter((item) => !item.followed)
+  const followedUsers = allUsers.filter((item) => item.followed)
+  return unfollowedUsers.concat(followedUsers).slice(0, SUGGESTION_LIMIT)
 }
 
 const loadRightRailData = async () => {
@@ -362,7 +366,7 @@ const loadRightRailData = async () => {
   rightRailLoading.value = true
   try {
     const [hotRes, latestRes] = await Promise.all([
-      getHotPosts(1, 40),
+      getTodayHotPosts(1, 40),
       showSuggestedRail.value ? getPostList(1, 24) : Promise.resolve(null)
     ])
     const hotPosts = hotRes?.code === 200 && Array.isArray(hotRes.data) ? hotRes.data : []
@@ -411,10 +415,6 @@ const toggleSuggestedFollow = async (item) => {
       return
     }
     const followed = !!res.data?.followed
-    if (followed) {
-      suggestedUsers.value = suggestedUsers.value.filter((userItem) => userItem.id !== item.id)
-      return
-    }
     suggestedUsers.value = suggestedUsers.value.map((userItem) => (
       userItem.id === item.id ? { ...userItem, followed } : userItem
     ))
@@ -999,10 +999,10 @@ a {
 }
 
 .suggest-card {
-  gap: 4px;
+  gap: 8px;
   overflow: hidden;
   max-height: none;
-  padding: 10px 10px 12px;
+  padding: 10px;
   align-content: start;
 }
 
@@ -1061,7 +1061,7 @@ a {
 
 .trend-card .rail-loading,
 .trend-card .rail-empty {
-  padding: 10px 12px 12px;
+  padding: 10px 12px 14px;
 }
 
 .trend-item {
@@ -1070,18 +1070,18 @@ a {
   border-radius: 0;
   background: transparent;
   color: var(--ink);
-  padding: 7px 12px;
+  padding: 8px 12px;
   text-align: left;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: center;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(68px, auto);
+  gap: 10px;
+  align-items: start;
   cursor: pointer;
   transition: background-color 0.16s ease;
 }
 
 .trend-item:last-of-type {
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .trend-item:hover {
@@ -1099,6 +1099,15 @@ a {
   display: grid;
   gap: 2px;
   min-width: 0;
+}
+
+.trend-side {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 82px;
+  white-space: nowrap;
 }
 
 .trend-title {
@@ -1119,6 +1128,12 @@ a {
   white-space: nowrap;
 }
 
+.trend-heat {
+  color: color-mix(in srgb, var(--ink) 72%, var(--muted));
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .trend-chip {
   border-radius: 999px;
   padding: 2px 6px;
@@ -1133,24 +1148,33 @@ a {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 6px;
   align-items: center;
+  border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+  border-radius: 12px;
+  padding: 6px;
+  background: color-mix(in srgb, var(--surface) 88%, var(--paper));
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.suggest-item:hover {
+  border-color: color-mix(in srgb, var(--line) 58%, var(--muted));
+  background: color-mix(in srgb, var(--surface) 96%, var(--paper));
 }
 
 .suggest-profile {
-  border: 1px solid transparent;
-  border-radius: 10px;
+  border: 0;
+  border-radius: 8px;
   background: transparent;
   color: var(--ink);
   display: flex;
   gap: 7px;
   align-items: center;
-  padding: 6px;
+  padding: 4px 5px;
   cursor: pointer;
   text-align: left;
 }
 
 .suggest-profile:hover {
-  border-color: color-mix(in srgb, var(--line) 65%, var(--muted));
-  background: color-mix(in srgb, var(--surface) 76%, var(--line));
+  background: color-mix(in srgb, var(--surface) 74%, var(--line));
 }
 
 .suggest-profile img {
@@ -1283,14 +1307,18 @@ a {
   opacity: 0;
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1040px), (hover: none) and (pointer: coarse) {
   html,
   body,
   #app {
     height: auto;
     min-height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
   }
 
   .shell {
@@ -1299,13 +1327,57 @@ a {
     min-height: 100dvh;
     overflow-x: hidden;
     overflow-y: visible;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .search-wrap {
+    grid-column: 1 / -1;
+    max-width: 100%;
+    order: 3;
+  }
+
+  .top-actions {
+    max-width: 100%;
+    justify-self: end;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .top-actions::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
   }
 
   .layout {
     grid-template-columns: 1fr;
     height: auto;
+    min-height: calc(100dvh - var(--topbar-height));
+    max-width: 100%;
     overflow: visible;
-    padding: 8px 12px 12px;
+    padding: 8px 12px 16px;
+    touch-action: pan-y pinch-zoom;
   }
 
   .layout.with-sidebar {
@@ -1331,33 +1403,32 @@ a {
     margin: 0;
   }
 
-  .sidebar {
-    position: static;
-    width: auto;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    padding: 0;
-  }
-
+  .sidebar,
   .right-rail {
-    grid-template-rows: auto;
-    position: static;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    padding: 0;
+    display: none;
   }
 
   .page {
+    order: 1;
     height: auto;
-    min-height: calc(100vh - 116px);
-    overflow: visible;
-    padding: 0;
+    min-height: calc(100dvh - 116px);
+    overflow-x: hidden;
+    overflow-y: visible;
+    max-width: 100%;
+    padding: 0 0 18px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .layout.guest-home-layout {
+    max-width: 100%;
   }
 
   .layout.guest-layout .page,
-  .layout.guest-home-layout .page {
+  .layout.guest-home-layout .page,
+  .layout.with-sidebar .page,
+  .layout.with-right-rail .page,
+  .layout.with-sidebar.with-right-rail .page {
     max-width: 100%;
     margin: 0;
   }
